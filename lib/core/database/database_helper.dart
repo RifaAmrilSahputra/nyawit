@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 8,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -37,6 +37,7 @@ class DatabaseHelper {
 
     await _createMasterTables(db);
     await _createTransactionTables(db);
+    await _createPerawatanTables(db);
   }
 
   Future<void> _createKebunTable(Database db) async {
@@ -72,6 +73,14 @@ class DatabaseHelper {
     }
     if (oldVersion < 6) {
       await _createPerawatanTables(db);
+    }
+    if (oldVersion < 7) {
+      await _createPembayaranPerawatanTable(db);
+      await _migrateLegacyPerawatanPayments(db);
+    }
+    if (oldVersion < 8) {
+      await _createStatusKegiatanPerawatanTable(db);
+      await _migrateInitialPerawatanStatus(db);
     }
   }
 
@@ -156,6 +165,89 @@ class DatabaseHelper {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_kegiatan_perawatan_produk_id ON kegiatan_perawatan(produk_id)',
     );
+    await _createPembayaranPerawatanTable(db);
+    await _createStatusKegiatanPerawatanTable(db);
+  }
+
+  Future<void> _createPembayaranPerawatanTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS pembayaran_perawatan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        kegiatan_perawatan_id INTEGER NOT NULL,
+        tanggal TEXT NOT NULL,
+        jumlah REAL NOT NULL CHECK(jumlah >= 0),
+        jenis TEXT NOT NULL DEFAULT 'angsuran',
+        keterangan TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY(kegiatan_perawatan_id) REFERENCES kegiatan_perawatan(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_pembayaran_perawatan_kegiatan_id ON pembayaran_perawatan(kegiatan_perawatan_id)',
+    );
+  }
+
+  Future<void> _createStatusKegiatanPerawatanTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS status_kegiatan_perawatan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        kegiatan_perawatan_id INTEGER NOT NULL,
+        status TEXT NOT NULL,
+        tanggal TEXT NOT NULL,
+        keterangan TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY(kegiatan_perawatan_id) REFERENCES kegiatan_perawatan(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_status_kegiatan_perawatan_id ON status_kegiatan_perawatan(kegiatan_perawatan_id, tanggal)',
+    );
+  }
+
+  Future<void> _migrateInitialPerawatanStatus(Database db) async {
+    final rows = await db.rawQuery('''
+      SELECT k.id, k.status_kegiatan, k.created_at
+      FROM kegiatan_perawatan k
+      WHERE NOT EXISTS (
+        SELECT 1 FROM status_kegiatan_perawatan s
+        WHERE s.kegiatan_perawatan_id = k.id
+      )
+    ''');
+    for (final row in rows) {
+      await db.insert('status_kegiatan_perawatan', {
+        'kegiatan_perawatan_id': row['id'],
+        'status': row['status_kegiatan'],
+        'tanggal': row['created_at'],
+        'keterangan': 'Status awal',
+        'created_at': row['created_at'],
+        'updated_at': row['created_at'],
+      });
+    }
+  }
+
+  Future<void> _migrateLegacyPerawatanPayments(Database db) async {
+    final rows = await db.rawQuery('''
+      SELECT id, dibayarkan, created_at, updated_at
+      FROM kegiatan_perawatan
+      WHERE dibayarkan > 0
+        AND NOT EXISTS (
+          SELECT 1 FROM pembayaran_perawatan
+          WHERE kegiatan_perawatan_id = kegiatan_perawatan.id
+        )
+    ''');
+    for (final row in rows) {
+      await db.insert('pembayaran_perawatan', {
+        'kegiatan_perawatan_id': row['id'],
+        'tanggal': row['updated_at'],
+        'jumlah': row['dibayarkan'],
+        'jenis': 'angsuran',
+        'keterangan': 'Migrasi pembayaran lama',
+        'created_at': row['created_at'],
+        'updated_at': row['updated_at'],
+      });
+    }
   }
 
   Future<void> _migrateKebunSchema(Database db) async {

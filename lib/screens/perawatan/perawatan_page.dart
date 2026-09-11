@@ -131,7 +131,7 @@ class _PerawatanPageState extends State<PerawatanPage> {
   }
 
   double get _totalDibayarkan {
-    return _filteredItems.fold(0.0, (sum, item) => sum + item.dibayarkan);
+    return _filteredItems.fold(0.0, (sum, item) => sum + item.totalDibayar);
   }
 
   @override
@@ -1401,7 +1401,7 @@ String _paymentLabel(String? status) {
       return 'Lunas';
 
     case 'kurang_bayar':
-      return 'Kurang bayar';
+      return 'Sebagian / DP';
 
     case 'lebih_bayar':
       return 'Lebih bayar';

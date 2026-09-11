@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nyawit/models/kegiatan_perawatan.dart';
+import 'package:nyawit/models/pembayaran_perawatan.dart';
+import 'package:nyawit/models/status_kegiatan_perawatan.dart';
 import 'package:nyawit/models/tarif_perawatan.dart';
 import 'package:nyawit/repositories/kegiatan_perawatan_repository.dart';
 
@@ -16,15 +18,197 @@ class PerawatanDetailPage extends StatefulWidget {
 class _PerawatanDetailPageState extends State<PerawatanDetailPage> {
   final _repo = KegiatanPerawatanRepository();
   late Future<KegiatanPerawatan?> _future;
+  final _paymentRepo = KegiatanPerawatanRepository();
+  late Future<List<PembayaranPerawatan>> _paymentsFuture;
+  late Future<List<StatusKegiatanPerawatan>> _statusHistoryFuture;
 
   @override
   void initState() {
     super.initState();
     _future = _repo.getById(widget.kegiatanId);
+    _paymentsFuture = _repo.getPayments(widget.kegiatanId);
+    _statusHistoryFuture = _repo.getStatusHistory(widget.kegiatanId);
   }
 
-  Future<void> _refresh() async =>
-      setState(() => _future = _repo.getById(widget.kegiatanId));
+  Future<void> _refresh() async {
+    setState(() {
+      _future = _repo.getById(widget.kegiatanId);
+      _paymentsFuture = _repo.getPayments(widget.kegiatanId);
+      _statusHistoryFuture = _repo.getStatusHistory(widget.kegiatanId);
+    });
+  }
+
+  Future<void> _changeStatus(StatusKegiatan status) async {
+    var tanggal = DateTime.now();
+    final noteController = TextEditingController();
+    final result = await showDialog<DateTime>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Catat status ${status.label}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            StatefulBuilder(
+              builder: (context, setDialogState) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today_rounded),
+                title: const Text('Tanggal perubahan'),
+                subtitle: Text(_formatDate(tanggal)),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: tanggal,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) {
+                    setDialogState(() => tanggal = picked);
+                  }
+                },
+              ),
+            ),
+            TextField(
+              controller: noteController,
+              decoration: const InputDecoration(
+                labelText: 'Keterangan (opsional)',
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, tanggal),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    final note = noteController.text.trim();
+    noteController.dispose();
+    if (result == null) return;
+    await _repo.updateStatus(
+      widget.kegiatanId,
+      status,
+      tanggal: result,
+      keterangan: note.isEmpty ? null : note,
+    );
+    await _refresh();
+  }
+
+  Future<void> _addPayment(KegiatanPerawatan k) async {
+    final amountController = TextEditingController(
+      text:
+          (k.totalDibayar < k.totalBiaya
+                  ? k.totalBiaya - k.totalDibayar
+                  : k.totalBiaya)
+              .toStringAsFixed(0),
+    );
+    var tanggal = DateTime.now();
+    var type = 'angsuran';
+    final noteController = TextEditingController();
+    final result = await showDialog<PembayaranPerawatan>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Tambah Pembayaran'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: amountController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(labelText: 'Jumlah (Rp)'),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today_rounded),
+                title: const Text('Tanggal pembayaran'),
+                subtitle: Text(_formatDate(tanggal)),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: tanggal,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) {
+                    setDialogState(() => tanggal = picked);
+                  }
+                },
+              ),
+              const SizedBox(height: 4),
+              DropdownButtonFormField<String>(
+                initialValue: type,
+                items: const [
+                  DropdownMenuItem(value: 'dp', child: Text('DP')),
+                  DropdownMenuItem(value: 'angsuran', child: Text('Angsuran')),
+                  DropdownMenuItem(
+                    value: 'pelunasan',
+                    child: Text('Pelunasan'),
+                  ),
+                ],
+                onChanged: (value) =>
+                    setDialogState(() => type = value ?? type),
+                decoration: const InputDecoration(labelText: 'Jenis'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: noteController,
+                decoration: const InputDecoration(
+                  labelText: 'Keterangan (opsional)',
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final amount = double.tryParse(
+                  amountController.text.replaceAll(',', '.'),
+                );
+                if (amount == null || amount <= 0) return;
+                final now = DateTime.now();
+                Navigator.pop(
+                  context,
+                  PembayaranPerawatan(
+                    kegiatanPerawatanId: k.id!,
+                    tanggal: tanggal,
+                    jumlah: amount,
+                    jenis: type,
+                    keterangan: noteController.text.trim().isEmpty
+                        ? null
+                        : noteController.text.trim(),
+                    createdAt: now,
+                    updatedAt: now,
+                  ),
+                );
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
+      ),
+    );
+    amountController.dispose();
+    noteController.dispose();
+    if (result != null) {
+      await _paymentRepo.addPayment(result);
+      await _refresh();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +266,7 @@ class _PerawatanDetailPageState extends State<PerawatanDetailPage> {
           final paymentStatus = k.statusPembayaran == 'lunas'
               ? 'Lunas'
               : k.statusPembayaran == 'kurang_bayar'
-              ? 'Kurang bayar'
+              ? 'Sebagian / DP'
               : k.statusPembayaran == 'lebih_bayar'
               ? 'Lebih bayar'
               : 'Belum bayar';
@@ -171,14 +355,42 @@ class _PerawatanDetailPageState extends State<PerawatanDetailPage> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                _PaymentSection(
-                  dibayarkan: _currency(k.dibayarkan),
-                  sisa: _currency(
-                    (k.totalBiaya - k.dibayarkan).clamp(0, double.infinity),
-                  ),
-                  status: paymentStatus,
-                  statusColor: statusColor,
-                  statusBackground: statusBackground,
+                _WorkStatusSection(
+                  status: k.statusKegiatan,
+                  onStart: k.statusKegiatan == StatusKegiatan.rencana
+                      ? () => _changeStatus(StatusKegiatan.dimulai)
+                      : k.statusKegiatan == StatusKegiatan.dimulai
+                      ? () => _changeStatus(StatusKegiatan.pengerjaan)
+                      : null,
+                  onComplete: k.statusKegiatan == StatusKegiatan.pengerjaan
+                      ? () => _changeStatus(StatusKegiatan.selesai)
+                      : null,
+                ),
+                const SizedBox(height: 14),
+                FutureBuilder<List<StatusKegiatanPerawatan>>(
+                  future: _statusHistoryFuture,
+                  builder: (context, statusSnapshot) {
+                    return _StatusHistorySection(
+                      history: statusSnapshot.data ?? const [],
+                    );
+                  },
+                ),
+                const SizedBox(height: 14),
+                FutureBuilder<List<PembayaranPerawatan>>(
+                  future: _paymentsFuture,
+                  builder: (context, paymentSnapshot) {
+                    final payments = paymentSnapshot.data ?? const [];
+                    return _PaymentSection(
+                      total: _currency(k.totalBiaya),
+                      dibayarkan: _currency(k.totalDibayar),
+                      sisa: _currency(k.totalBiaya - k.totalDibayar),
+                      status: paymentStatus,
+                      statusColor: statusColor,
+                      statusBackground: statusBackground,
+                      payments: payments,
+                      onAdd: () => _addPayment(k),
+                    );
+                  },
                 ),
               ],
             ),
@@ -564,20 +776,70 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
+class _WorkStatusSection extends StatelessWidget {
+  const _WorkStatusSection({
+    required this.status,
+    required this.onStart,
+    required this.onComplete,
+  });
+
+  final StatusKegiatan status;
+  final VoidCallback? onStart;
+  final VoidCallback? onComplete;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DetailSection(
+      title: 'Status pengerjaan',
+      icon: Icons.engineering_rounded,
+      children: [
+        _DetailRow(
+          'Status',
+          status.label,
+          icon: Icons.flag_rounded,
+          isLast: true,
+        ),
+        if (onStart != null)
+          FilledButton.icon(
+            onPressed: onStart,
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: Text(
+              status == StatusKegiatan.rencana
+                  ? 'Mulai Pengerjaan'
+                  : 'Tandai Pengerjaan',
+            ),
+          ),
+        if (onComplete != null)
+          FilledButton.icon(
+            onPressed: onComplete,
+            icon: const Icon(Icons.check_rounded),
+            label: const Text('Tandai Selesai'),
+          ),
+      ],
+    );
+  }
+}
+
 class _PaymentSection extends StatelessWidget {
   const _PaymentSection({
+    required this.total,
     required this.dibayarkan,
     required this.sisa,
     required this.status,
     required this.statusColor,
     required this.statusBackground,
+    required this.payments,
+    required this.onAdd,
   });
 
+  final String total;
   final String dibayarkan;
   final String sisa;
   final String status;
   final Color statusColor;
   final Color statusBackground;
+  final List<PembayaranPerawatan> payments;
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -635,6 +897,12 @@ class _PaymentSection extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: onAdd,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Tambah Pembayaran'),
+          ),
           const SizedBox(height: 15),
           Container(
             padding: const EdgeInsets.all(13),
@@ -645,7 +913,13 @@ class _PaymentSection extends StatelessWidget {
             child: Column(
               children: [
                 _PaymentRow(
-                  label: 'Dibayarkan',
+                  label: 'Total Biaya',
+                  value: total,
+                  icon: Icons.receipt_long_outlined,
+                ),
+                const SizedBox(height: 11),
+                _PaymentRow(
+                  label: 'Total Dibayar',
                   value: dibayarkan,
                   icon: Icons.check_circle_outline_rounded,
                 ),
@@ -659,11 +933,61 @@ class _PaymentSection extends StatelessWidget {
               ],
             ),
           ),
+          if (payments.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Text(
+              'Riwayat pembayaran',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            ...payments.map(
+              (payment) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.payments_outlined),
+                title: Text(_currency(payment.jumlah)),
+                subtitle: Text(
+                  '${payment.jenis} - ${_formatDate(payment.tanggal)}',
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
+
+class _StatusHistorySection extends StatelessWidget {
+  const _StatusHistorySection({required this.history});
+
+  final List<StatusKegiatanPerawatan> history;
+
+  @override
+  Widget build(BuildContext context) {
+    if (history.isEmpty) return const SizedBox.shrink();
+
+    return _DetailSection(
+      title: 'Riwayat pengerjaan',
+      icon: Icons.history_rounded,
+      children: history
+          .map(
+            (item) => _DetailRow(
+              StatusKegiatanExtension.fromValue(item.status).label,
+              '${_formatDate(item.tanggal)}${item.keterangan == null ? '' : '\n${item.keterangan}'}',
+              icon: Icons.event_note_rounded,
+              isLast: item == history.last,
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+String _formatDate(DateTime date) =>
+    date.toLocal().toIso8601String().split('T').first;
+
+String _currency(num value) =>
+    'Rp${value.toStringAsFixed(0).replaceAllMapped(RegExp(r'(?<=\d)(?=(\d{3})+(?!\d))'), (match) => '.')}';
 
 class _PaymentRow extends StatelessWidget {
   const _PaymentRow({

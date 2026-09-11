@@ -7,6 +7,7 @@ import 'package:nyawit/models/produk.dart';
 import 'package:nyawit/models/kebun_pekerja.dart';
 import 'package:nyawit/models/pekerja.dart';
 import 'package:nyawit/models/kegiatan_perawatan_pekerja.dart';
+import 'package:nyawit/models/status_kegiatan_perawatan.dart';
 import 'package:nyawit/repositories/kebun_repository.dart';
 import 'package:nyawit/repositories/produk_repository.dart';
 import 'package:nyawit/repositories/tarif_perawatan_repository.dart';
@@ -59,7 +60,6 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
   final _satuanController = TextEditingController();
   final _tarifController = TextEditingController();
   final _totalController = TextEditingController();
-  final _dibayarController = TextEditingController(text: '0');
   final _keteranganController = TextEditingController();
 
   DateTime _tanggalMulai = DateTime.now();
@@ -115,7 +115,6 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
       _tarifController.text = k.tarifSatuan!.toString();
     }
     _totalController.text = k.totalBiaya.toString();
-    _dibayarController.text = k.dibayarkan.toString();
     _keteranganController.text = k.keterangan ?? '';
     _tanggalMulai = k.tanggalMulai;
     _tanggalSelesai = k.tanggalSelesai;
@@ -176,9 +175,6 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
           : double.tryParse(_tarifController.text.replaceAll(',', '.'));
       final totalBiaya =
           double.tryParse(_totalController.text.replaceAll(',', '.')) ?? 0;
-      final dibayarkan =
-          double.tryParse(_dibayarController.text.replaceAll(',', '.')) ?? 0;
-
       final kegiatan = KegiatanPerawatan(
         kebunId: _kebunId!,
         jenis: _jenis,
@@ -192,7 +188,8 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
         satuan: satuan,
         tarifSatuan: tarifSatuan,
         totalBiaya: totalBiaya,
-        dibayarkan: dibayarkan,
+        statusKegiatan:
+            widget.kegiatan?.statusKegiatan ?? StatusKegiatan.rencana,
         keterangan: _keteranganController.text.trim().isEmpty
             ? null
             : _keteranganController.text.trim(),
@@ -202,6 +199,16 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
 
       if (widget.kegiatan == null) {
         final id = await _repo.insert(kegiatan);
+        await _repo.addStatusHistory(
+          StatusKegiatanPerawatan(
+            kegiatanPerawatanId: id,
+            status: StatusKegiatan.rencana.value,
+            tanggal: _tanggalMulai,
+            keterangan: 'Status awal',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
         final relations = _selectedPekerjaIds
             .map(
               (pid) => KegiatanPerawatanPekerja(
@@ -604,54 +611,6 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
-              _FormSection(
-                title: 'Pembayaran',
-                icon: Icons.payments_rounded,
-                children: [
-                  TextFormField(
-                    controller: _dibayarController,
-                    decoration:
-                        _inputDecoration(
-                          context,
-                          'Dibayarkan (Rp)',
-                          Icons.payments_rounded,
-                        ).copyWith(
-                          suffixIcon: IconButton(
-                            tooltip: 'Bayar sesuai total',
-                            onPressed: () {
-                              final total =
-                                  double.tryParse(
-                                    _totalController.text.replaceAll(',', '.'),
-                                  ) ??
-                                  0;
-                              setState(
-                                () =>
-                                    _dibayarController.text = total.toString(),
-                              );
-                            },
-                            icon: const Icon(Icons.auto_fix_high_rounded),
-                          ),
-                        ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\.,]')),
-                    ],
-                    validator: (v) {
-                      final val = double.tryParse(
-                        (v ?? '').replaceAll(',', '.'),
-                      );
-                      if (val == null || val < 0) {
-                        return 'Pembayaran tidak valid';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
               if (_kebunPekerjaRelations.isNotEmpty) ...[
                 _FormSection(
                   title: 'Tim kerja',
@@ -759,7 +718,6 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
     _satuanController.dispose();
     _tarifController.dispose();
     _totalController.dispose();
-    _dibayarController.dispose();
     _keteranganController.dispose();
     super.dispose();
   }

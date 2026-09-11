@@ -1,14 +1,16 @@
 import 'tarif_perawatan.dart';
 
-enum StatusKegiatan { rencana, berlangsung, selesai, dibatalkan }
+enum StatusKegiatan { rencana, dimulai, pengerjaan, selesai, dibatalkan }
 
 extension StatusKegiatanExtension on StatusKegiatan {
   String get value {
     switch (this) {
       case StatusKegiatan.rencana:
         return 'rencana';
-      case StatusKegiatan.berlangsung:
-        return 'berlangsung';
+      case StatusKegiatan.dimulai:
+        return 'dimulai';
+      case StatusKegiatan.pengerjaan:
+        return 'pengerjaan';
       case StatusKegiatan.selesai:
         return 'selesai';
       case StatusKegiatan.dibatalkan:
@@ -20,8 +22,10 @@ extension StatusKegiatanExtension on StatusKegiatan {
     switch (this) {
       case StatusKegiatan.rencana:
         return 'Rencana';
-      case StatusKegiatan.berlangsung:
-        return 'Berlangsung';
+      case StatusKegiatan.dimulai:
+        return 'Dimulai';
+      case StatusKegiatan.pengerjaan:
+        return 'Pengerjaan';
       case StatusKegiatan.selesai:
         return 'Selesai';
       case StatusKegiatan.dibatalkan:
@@ -33,8 +37,12 @@ extension StatusKegiatanExtension on StatusKegiatan {
     switch (value) {
       case 'rencana':
         return StatusKegiatan.rencana;
+      case 'dimulai':
+      case 'mulai':
+        return StatusKegiatan.dimulai;
+      case 'pengerjaan':
       case 'berlangsung':
-        return StatusKegiatan.berlangsung;
+        return StatusKegiatan.pengerjaan;
       case 'selesai':
         return StatusKegiatan.selesai;
       case 'dibatalkan':
@@ -78,7 +86,7 @@ class KegiatanPerawatan {
   /// Lainnya = input manual
   final double totalBiaya;
 
-  final double dibayarkan;
+  final double totalDibayar;
 
   final StatusKegiatan statusKegiatan;
   final String? keterangan;
@@ -98,8 +106,8 @@ class KegiatanPerawatan {
     this.satuan,
     this.tarifSatuan,
     required this.totalBiaya,
-    this.dibayarkan = 0,
-    this.statusKegiatan = StatusKegiatan.selesai,
+    this.totalDibayar = 0,
+    this.statusKegiatan = StatusKegiatan.rencana,
     this.keterangan,
     required this.createdAt,
     required this.updatedAt,
@@ -111,20 +119,20 @@ class KegiatanPerawatan {
   /// 0        = lunas
   /// Positif  = lebih bayar
   double get selisihPembayaran {
-    return dibayarkan - totalBiaya;
+    return totalDibayar - totalBiaya;
   }
 
   /// Status pembayaran dihitung, bukan disimpan di database.
   String get statusPembayaran {
-    if (dibayarkan == 0) {
+    if (totalDibayar == 0) {
       return 'belum_dibayar';
     }
 
-    if (dibayarkan < totalBiaya) {
+    if (totalDibayar < totalBiaya) {
       return 'kurang_bayar';
     }
 
-    if (dibayarkan == totalBiaya) {
+    if (totalDibayar == totalBiaya) {
       return 'lunas';
     }
 
@@ -147,7 +155,7 @@ class KegiatanPerawatan {
     String? satuan,
     double? tarifSatuan,
     double? totalBiaya,
-    double? dibayarkan,
+    double? totalDibayar,
     StatusKegiatan? statusKegiatan,
     String? keterangan,
     DateTime? createdAt,
@@ -165,7 +173,7 @@ class KegiatanPerawatan {
       satuan: satuan ?? this.satuan,
       tarifSatuan: tarifSatuan ?? this.tarifSatuan,
       totalBiaya: totalBiaya ?? this.totalBiaya,
-      dibayarkan: dibayarkan ?? this.dibayarkan,
+      totalDibayar: totalDibayar ?? this.totalDibayar,
       statusKegiatan: statusKegiatan ?? this.statusKegiatan,
       keterangan: keterangan ?? this.keterangan,
       createdAt: createdAt ?? this.createdAt,
@@ -186,7 +194,8 @@ class KegiatanPerawatan {
       'satuan': satuan,
       'tarif_satuan': tarifSatuan,
       'total_biaya': totalBiaya,
-      'dibayarkan': dibayarkan,
+      // Kept for backward-compatible reads; new payments use their own table.
+      'dibayarkan': 0,
       'status_kegiatan': statusKegiatan.value,
       'keterangan': keterangan,
       'created_at': createdAt.toIso8601String(),
@@ -209,7 +218,10 @@ class KegiatanPerawatan {
           ? null
           : (map['tarif_satuan'] as num).toDouble(),
       totalBiaya: (map['total_biaya'] as num).toDouble(),
-      dibayarkan: (map['dibayarkan'] as num?)?.toDouble() ?? 0,
+      totalDibayar:
+          (map['total_dibayar'] as num?)?.toDouble() ??
+          (map['dibayarkan'] as num?)?.toDouble() ??
+          0,
       statusKegiatan: StatusKegiatanExtension.fromValue(
         map['status_kegiatan'] as String,
       ),
