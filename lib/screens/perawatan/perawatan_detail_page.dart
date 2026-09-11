@@ -215,9 +215,9 @@ class _PerawatanDetailPageState extends State<PerawatanDetailPage> {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8F6),
+      backgroundColor: colors.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F8F6),
+        backgroundColor: colors.surface,
         scrolledUnderElevation: 0,
         titleSpacing: 4,
         title: const Text(
@@ -231,7 +231,7 @@ class _PerawatanDetailPageState extends State<PerawatanDetailPage> {
               tooltip: 'Refresh',
               onPressed: _refresh,
               style: IconButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: colors.surfaceContainerHighest,
                 foregroundColor: colors.primary,
               ),
               icon: const Icon(Icons.refresh_rounded),
@@ -290,7 +290,7 @@ class _PerawatanDetailPageState extends State<PerawatanDetailPage> {
           return RefreshIndicator(
             onRefresh: _refresh,
             color: _green,
-            backgroundColor: Colors.white,
+            backgroundColor: colors.surfaceContainerHighest,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
@@ -570,7 +570,7 @@ class _QuickSummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: colors.outlineVariant),
       ),
@@ -669,7 +669,7 @@ class _DetailSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 7),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(21),
         border: Border.all(color: colors.outlineVariant),
       ),
@@ -682,7 +682,7 @@ class _DetailSection extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5F3E9),
+                  color: colors.secondaryContainer,
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(icon, size: 18, color: colors.primary),
@@ -848,7 +848,7 @@ class _PaymentSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(21),
         border: Border.all(color: colors.outlineVariant),
       ),
@@ -861,7 +861,7 @@ class _PaymentSection extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5F3E9),
+                  color: colors.secondaryContainer,
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(

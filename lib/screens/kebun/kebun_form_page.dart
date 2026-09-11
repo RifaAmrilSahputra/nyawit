@@ -315,73 +315,66 @@ class _KebunFormPageState extends State<KebunFormPage> {
 
                   const SizedBox(height: 18),
 
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildInput(
-                          controller: _luasController,
-                          label: 'Luas',
-                          hint: '245',
-                          icon: Icons.straighten_rounded,
-                          suffix: 'Ha',
-                          colors: colors,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return null;
-                            }
-
-                            final luas = double.tryParse(
-                              value.trim().replaceAll(',', '.'),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isCompact = constraints.maxWidth < 430;
+                      final luas = _buildInput(
+                        controller: _luasController,
+                        label: 'Luas',
+                        hint: '245',
+                        icon: Icons.straighten_rounded,
+                        suffix: 'Ha',
+                        colors: colors,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return null;
+                          }
+                          final luas = double.tryParse(
+                            value.trim().replaceAll(',', '.'),
+                          );
+                          if (luas == null) return 'Tidak valid';
+                          if (luas <= 0) return 'Harus > 0';
+                          return null;
+                        },
+                      );
+                      final pohon = _buildInput(
+                        controller: _jumlahPohonController,
+                        label: 'Pohon',
+                        hint: '18000',
+                        icon: Icons.forest_rounded,
+                        suffix: 'pohon',
+                        colors: colors,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return null;
+                          }
+                          final jumlah = int.tryParse(value.trim());
+                          if (jumlah == null) return 'Tidak valid';
+                          if (jumlah <= 0) return 'Harus > 0';
+                          return null;
+                        },
+                      );
+                      return isCompact
+                          ? Column(
+                              children: [
+                                luas,
+                                const SizedBox(height: 14),
+                                pohon,
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(child: luas),
+                                const SizedBox(width: 12),
+                                Expanded(child: pohon),
+                              ],
                             );
-
-                            if (luas == null) {
-                              return 'Tidak valid';
-                            }
-
-                            if (luas <= 0) {
-                              return 'Harus > 0';
-                            }
-
-                            return null;
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: _buildInput(
-                          controller: _jumlahPohonController,
-                          label: 'Pohon',
-                          hint: '18000',
-                          icon: Icons.forest_rounded,
-                          suffix: 'pohon',
-                          colors: colors,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return null;
-                            }
-
-                            final jumlah = int.tryParse(value.trim());
-
-                            if (jumlah == null) {
-                              return 'Tidak valid';
-                            }
-
-                            if (jumlah <= 0) {
-                              return 'Harus > 0';
-                            }
-
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
+                    },
                   ),
 
                   const SizedBox(height: 30),

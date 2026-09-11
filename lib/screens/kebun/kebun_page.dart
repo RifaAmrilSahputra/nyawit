@@ -121,7 +121,7 @@ class _KebunPageState extends State<KebunPage> {
           }
 
           return RefreshIndicator(
-            color: const Color(0xFF176B3A),
+            color: colors.primary,
             onRefresh: _refresh,
 
             child: ListView(
@@ -182,7 +182,7 @@ class _KebunPageState extends State<KebunPage> {
       padding: const EdgeInsets.all(20),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF176B3A),
+        color: colors.primary,
 
         borderRadius: BorderRadius.circular(26),
 
@@ -387,6 +387,7 @@ class _AddGardenButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     if (compact) {
       return IconButton(
         onPressed: onPressed,
@@ -394,9 +395,9 @@ class _AddGardenButton extends StatelessWidget {
         tooltip: 'Tambah Kebun',
 
         style: IconButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: colors.onPrimary,
 
-          foregroundColor: const Color(0xFF176B3A),
+          foregroundColor: colors.primary,
 
           minimumSize: const Size(42, 42),
 
@@ -417,9 +418,9 @@ class _AddGardenButton extends StatelessWidget {
       onPressed: onPressed,
 
       style: FilledButton.styleFrom(
-        backgroundColor: Colors.white,
+        backgroundColor: colors.onPrimary,
 
-        foregroundColor: const Color(0xFF176B3A),
+        foregroundColor: colors.primary,
 
         elevation: 0,
 
@@ -478,7 +479,7 @@ class GardenCard extends StatelessWidget {
           padding: const EdgeInsets.all(17),
 
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colors.surfaceContainerLow,
 
             borderRadius: BorderRadius.circular(22),
 
@@ -510,14 +511,14 @@ class GardenCard extends StatelessWidget {
                     height: 50,
 
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE4F3E9),
+                      color: colors.secondaryContainer,
 
                       borderRadius: BorderRadius.circular(15),
                     ),
 
-                    child: const Icon(
+                    child: Icon(
                       Icons.forest_rounded,
-                      color: Color(0xFF176B3A),
+                      color: colors.primary,
                       size: 26,
                     ),
                   ),
@@ -546,10 +547,10 @@ class GardenCard extends StatelessWidget {
 
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.location_on_rounded,
                               size: 14,
-                              color: Color(0xFF7B827D),
+                              color: colors.onSurfaceVariant,
                             ),
 
                             const SizedBox(width: 4),
@@ -562,9 +563,9 @@ class GardenCard extends StatelessWidget {
 
                                 overflow: TextOverflow.ellipsis,
 
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF7B827D),
+                                  color: colors.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -589,7 +590,7 @@ class GardenCard extends StatelessWidget {
                 ),
 
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF6F8F6),
+                  color: colors.surfaceContainerHighest,
 
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -742,9 +743,9 @@ class _HarvestButton extends StatelessWidget {
       },
 
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF176B3A),
+        foregroundColor: Theme.of(context).colorScheme.primary,
 
-        side: const BorderSide(color: Color(0xFF176B3A)),
+        side: BorderSide(color: Theme.of(context).colorScheme.primary),
 
         minimumSize: const Size(0, 42),
 
@@ -796,9 +797,9 @@ class _MaintenanceButton extends StatelessWidget {
       },
 
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF176B3A),
+        foregroundColor: Theme.of(context).colorScheme.primary,
 
-        side: const BorderSide(color: Color(0xFF176B3A)),
+        side: BorderSide(color: Theme.of(context).colorScheme.primary),
 
         minimumSize: const Size(0, 42),
 
@@ -985,7 +986,7 @@ class _GardenStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, size: 17, color: const Color(0xFF176B3A)),
+        Icon(icon, size: 17, color: Theme.of(context).colorScheme.primary),
 
         const SizedBox(height: 5),
 
@@ -1008,7 +1009,10 @@ class _GardenStat extends StatelessWidget {
 
           overflow: TextOverflow.ellipsis,
 
-          style: const TextStyle(fontSize: 10, color: Color(0xFF7B827D)),
+          style: TextStyle(
+            fontSize: 10,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -1024,7 +1028,11 @@ class _VerticalDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 38, color: const Color(0xFFE0E5E1));
+    return Container(
+      width: 1,
+      height: 38,
+      color: Theme.of(context).colorScheme.outlineVariant,
+    );
   }
 }
 
@@ -1110,15 +1118,15 @@ class _EmptyView extends StatelessWidget {
               width: 100,
               height: 100,
 
-              decoration: const BoxDecoration(
-                color: Color(0xFFE4F3E9),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondaryContainer,
                 shape: BoxShape.circle,
               ),
 
-              child: const Icon(
+              child: Icon(
                 Icons.forest_rounded,
                 size: 45,
-                color: Color(0xFF176B3A),
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
 
@@ -1132,7 +1140,7 @@ class _EmptyView extends StatelessWidget {
 
             const SizedBox(height: 7),
 
-            const Text(
+            Text(
               'Tambahkan kebun pertama untuk mulai '
               'mengelola data perkebunan.',
 
@@ -1141,7 +1149,7 @@ class _EmptyView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: Color(0xFF777D79),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
 
@@ -1151,7 +1159,7 @@ class _EmptyView extends StatelessWidget {
               onPressed: onAdd,
 
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF176B3A),
+                backgroundColor: Theme.of(context).colorScheme.primary,
 
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -1192,7 +1200,11 @@ class _NoSearchResult extends StatelessWidget {
 
       child: Column(
         children: [
-          Icon(Icons.search_off_rounded, size: 50, color: Colors.grey.shade400),
+          Icon(
+            Icons.search_off_rounded,
+            size: 50,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
 
           const SizedBox(height: 12),
 
@@ -1207,7 +1219,10 @@ class _NoSearchResult extends StatelessWidget {
           Text(
             'Coba gunakan nama atau lokasi lain.',
 
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -1224,8 +1239,10 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(color: Color(0xFF176B3A)),
+    return Center(
+      child: CircularProgressIndicator(
+        color: Theme.of(context).colorScheme.primary,
+      ),
     );
   }
 }
@@ -1254,14 +1271,14 @@ class _ErrorView extends StatelessWidget {
               height: 80,
 
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: Theme.of(context).colorScheme.errorContainer,
                 shape: BoxShape.circle,
               ),
 
               child: Icon(
                 Icons.cloud_off_rounded,
                 size: 36,
-                color: Colors.red.shade400,
+                color: Theme.of(context).colorScheme.error,
               ),
             ),
 
@@ -1280,7 +1297,10 @@ class _ErrorView extends StatelessWidget {
 
               textAlign: TextAlign.center,
 
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -1325,10 +1345,10 @@ class KebunDetailPageLegacy extends StatelessWidget {
     final status = (kebun.keterangan?.isNotEmpty ?? false) ? 'Aktif' : 'Siap';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8F6),
+      backgroundColor: colors.surface,
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F8F6),
+        backgroundColor: colors.surface,
 
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -1347,7 +1367,9 @@ class KebunDetailPageLegacy extends StatelessWidget {
             child: IconButton(
               onPressed: () => _editKebun(context),
 
-              style: IconButton.styleFrom(backgroundColor: Colors.white),
+              style: IconButton.styleFrom(
+                backgroundColor: colors.surfaceContainerHighest,
+              ),
 
               icon: const Icon(Icons.edit_rounded, size: 20),
             ),

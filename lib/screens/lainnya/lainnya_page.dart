@@ -405,8 +405,8 @@ class AppSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeController = ThemeScope.of(context);
     final colors = Theme.of(context).colorScheme;
+    final themeController = ThemeScope.of(context);
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -428,7 +428,7 @@ class AppSettingsPage extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
-            _buildHeader(themeController.isDarkMode),
+            _buildHeader(themeController.isDarkMode(context)),
 
             const SizedBox(height: 22),
 
@@ -437,7 +437,7 @@ class AppSettingsPage extends StatelessWidget {
             const SizedBox(height: 14),
 
             _ThemeCard(
-              isDarkMode: themeController.isDarkMode,
+              isDarkMode: themeController.isDarkMode(context),
               onChanged: themeController.setDarkMode,
             ),
 

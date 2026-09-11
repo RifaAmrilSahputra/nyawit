@@ -114,44 +114,50 @@ class _PanenDetailPageState extends State<PanenDetailPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    appBar: AppBar(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      scrolledUnderElevation: 0,
-      title: const Text(
-        'Detail Panen',
-        style: TextStyle(fontWeight: FontWeight.w800),
-      ),
-      actions: [
-        IconButton(
-          tooltip: 'Hapus panen',
-          onPressed: _delete,
-          icon: const Icon(Icons.delete_outline_rounded),
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colors.surface,
+      appBar: AppBar(
+        backgroundColor: colors.surface,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          'Detail Panen',
+          style: TextStyle(fontWeight: FontWeight.w800),
         ),
-      ],
-    ),
-    body: FutureBuilder<_PanenDetailData?>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator(color: _green));
-        }
-        if (snapshot.hasError) {
-          return _ErrorView(onRetry: () => setState(() => _future = _load()));
-        }
-        final data = snapshot.data;
-        if (data == null) {
-          return const _EmptyDetailView();
-        }
-        return _DetailBody(
-          data: data,
-          onEdit: () => _edit(data.panen),
-          onRefresh: () async => setState(() => _future = _load()),
-        );
-      },
-    ),
-  );
+        actions: [
+          IconButton(
+            tooltip: 'Hapus panen',
+            onPressed: _delete,
+            icon: const Icon(Icons.delete_outline_rounded),
+          ),
+        ],
+      ),
+      body: FutureBuilder<_PanenDetailData?>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(color: _green),
+            );
+          }
+          if (snapshot.hasError) {
+            return _ErrorView(onRetry: () => setState(() => _future = _load()));
+          }
+          final data = snapshot.data;
+          if (data == null) {
+            return const _EmptyDetailView();
+          }
+          return _DetailBody(
+            data: data,
+            onEdit: () => _edit(data.panen),
+            onRefresh: () async => setState(() => _future = _load()),
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _PanenDetailData {
@@ -370,6 +376,13 @@ class _SummaryCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: _green,
       borderRadius: BorderRadius.circular(24),
+      boxShadow: [
+        BoxShadow(
+          color: _green.withValues(alpha: 0.16),
+          blurRadius: 22,
+          offset: const Offset(0, 9),
+        ),
+      ],
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,8 +453,11 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     elevation: 0,
-    color: Theme.of(context).colorScheme.surfaceContainerLow,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    color: Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+      side: const BorderSide(color: Color(0xFFE3E9E4)),
+    ),
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(

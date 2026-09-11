@@ -250,6 +250,7 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 760;
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -257,14 +258,193 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
         backgroundColor: colors.surface,
         scrolledUnderElevation: 0,
         titleSpacing: 0,
+        title: Text(
+          widget.kegiatan == null ? 'Perawatan baru' : 'Edit perawatan',
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        padding: EdgeInsets.fromLTRB(
+          isWide ? 28 : 16,
+          12,
+          isWide ? 28 : 16,
+          40,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1080),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildIntro(context),
+                  const SizedBox(height: 22),
+                  if (isWide)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: _buildGeneralSection(context)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildDetailsSection(context)),
+                      ],
+                    )
+                  else ...[
+                    _buildGeneralSection(context),
+                    const SizedBox(height: 14),
+                    _buildDetailsSection(context),
+                  ],
+                  if (_kebunPekerjaRelations.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    _buildTeamSection(context),
+                  ],
+                  const SizedBox(height: 14),
+                  _FormSection(
+                    title: 'Catatan lapangan',
+                    icon: Icons.notes_rounded,
+                    children: [
+                      TextFormField(
+                        controller: _keteranganController,
+                        decoration: _inputDecoration(
+                          context,
+                          'Keterangan',
+                          Icons.notes_rounded,
+                          hintText: 'Tambahkan catatan kegiatan...',
+                        ),
+                        maxLines: 4,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  FilledButton.icon(
+                    onPressed: _isSaving ? null : _save,
+                    icon: const Icon(Icons.check_rounded),
+                    label: Text(
+                      _isSaving ? 'Menyimpan...' : 'Simpan perawatan',
+                    ),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                      backgroundColor: colors.primary,
+                      foregroundColor: colors.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntro(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
+      decoration: BoxDecoration(
+        color: const Color(0xFF254C3A),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: colors.primary.withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5B96B),
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: const Icon(
+              Icons.agriculture_rounded,
+              color: Color(0xFF254C3A),
+              size: 27,
+            ),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Catat pekerjaan kebun',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Simpan rencana perawatan dengan detail yang jelas.',
+                  style: TextStyle(
+                    color: Color(0xFFD4E3D8),
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGeneralSection(BuildContext context) {
+    return _FormSection(
+      title: 'Informasi umum',
+      icon: Icons.tune_rounded,
+      children: [
+        _buildJenisField(context),
+        const SizedBox(height: 12),
+        _buildKebunField(context),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _namaController,
+          decoration: _inputDecoration(
+            context,
+            'Nama kegiatan',
+            Icons.edit_note_rounded,
+            hintText: 'Contoh: Pemupukan blok A',
+          ),
+        ),
+        const SizedBox(height: 14),
+        _buildDateFields(context),
+      ],
+    );
+  }
+
+  Widget _buildDetailsSection(BuildContext context) {
+    return _FormSection(
+      title: 'Detail pekerjaan',
+      icon: Icons.assignment_rounded,
+      children: [
+        if (_jenis == JenisPerawatan.pupuk ||
+            _jenis == JenisPerawatan.semprot) ...[
+          _buildProdukField(context),
+          const SizedBox(height: 12),
+        ],
+        _buildJumlahField(context),
+        if (_jenis != JenisPerawatan.lainnya) ...[
+          const SizedBox(height: 12),
+          _buildTarifField(context),
+        ],
+        const SizedBox(height: 12),
+        _buildTotalField(context),
+      ],
+    );
+  }
+  /*
               _FormSection(
                 title: 'Informasi umum',
                 icon: Icons.info_outline_rounded,
@@ -682,14 +862,274 @@ class _PerawatanFormPageState extends State<PerawatanFormPage> {
     );
   }
 
+  */
+
+  Widget _buildJenisField(BuildContext context) =>
+      DropdownButtonFormField<JenisPerawatan>(
+        initialValue: _jenis,
+        isExpanded: true,
+        items: JenisPerawatan.values
+            .map(
+              (item) => DropdownMenuItem(value: item, child: Text(item.label)),
+            )
+            .toList(),
+        onChanged: (value) async {
+          if (value == null) return;
+          setState(() => _jenis = value);
+          await _loadDefaultTarifAndProduk();
+        },
+        decoration: _inputDecoration(
+          context,
+          'Jenis perawatan',
+          Icons.category_rounded,
+        ),
+      );
+
+  Widget _buildKebunField(BuildContext context) => DropdownButtonFormField<int>(
+    initialValue: _kebunId,
+    isExpanded: true,
+    items: _kebuns
+        .map((item) => DropdownMenuItem(value: item.id, child: Text(item.nama)))
+        .toList(),
+    onChanged: widget.lockKebun
+        ? null
+        : (value) async {
+            if (value != null) await _onKebunChanged(value);
+          },
+    decoration: _inputDecoration(context, 'Kebun', Icons.park_rounded).copyWith(
+      suffixIcon: widget.lockKebun
+          ? const Icon(Icons.lock_outline_rounded, size: 19)
+          : null,
+    ),
+    validator: (value) => value == null ? 'Kebun wajib dipilih' : null,
+  );
+
+  Widget _buildDateFields(BuildContext context) {
+    Widget field(
+      String label,
+      IconData icon,
+      DateTime date,
+      VoidCallback onTap,
+    ) {
+      return Expanded(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: InputDecorator(
+            decoration: _inputDecoration(context, label, icon),
+            child: Text(date.toLocal().toIso8601String().split('T').first),
+          ),
+        ),
+      );
+    }
+
+    final start = field(
+      'Tanggal mulai',
+      Icons.calendar_today_rounded,
+      _tanggalMulai,
+      () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _tanggalMulai,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (picked != null) {
+          setState(() {
+            _tanggalMulai = picked;
+            if (_tanggalSelesai.isBefore(picked)) _tanggalSelesai = picked;
+          });
+        }
+      },
+    );
+    final end = field(
+      'Tanggal selesai',
+      Icons.event_available_rounded,
+      _tanggalSelesai,
+      () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _tanggalSelesai,
+          firstDate: _tanggalMulai,
+          lastDate: DateTime(2100),
+        );
+        if (picked != null) setState(() => _tanggalSelesai = picked);
+      },
+    );
+    return MediaQuery.sizeOf(context).width >= 560
+        ? Row(children: [start, const SizedBox(width: 10), end])
+        : Column(
+            children: [
+              Row(children: [start]),
+              const SizedBox(height: 12),
+              Row(children: [end]),
+            ],
+          );
+  }
+
+  Widget _buildProdukField(
+    BuildContext context,
+  ) => DropdownButtonFormField<int>(
+    initialValue: _produkId,
+    isExpanded: true,
+    items: _produkList
+        .where(
+          (item) =>
+              item.aktif &&
+              (_jenis == JenisPerawatan.pupuk
+                  ? item.jenis == 'pupuk'
+                  : item.jenis == 'semprot'),
+        )
+        .map((item) => DropdownMenuItem(value: item.id, child: Text(item.nama)))
+        .toList(),
+    onChanged: (value) async {
+      setState(() => _produkId = value);
+      if (_kebunId == null) {
+        return;
+      }
+      final tarif = await _tarifRepo.getFor(
+        _jenis,
+        kebunId: _kebunId,
+        produkId: value,
+      );
+      if (tarif != null) _tarifController.text = tarif.tarif.toString();
+      final product = _produkList.firstWhere((item) => item.id == value);
+      _satuanController.text = product.satuanDefault;
+      _recalculateTotal();
+    },
+    decoration: _inputDecoration(context, 'Produk', Icons.inventory_2_rounded),
+    validator: (value) => value == null ? 'Produk wajib dipilih' : null,
+  );
+
+  Widget _buildJumlahField(BuildContext context) {
+    final isTunas = _jenis == JenisPerawatan.tunas;
+    final isSemprot = _jenis == JenisPerawatan.semprot;
+    if (_jenis == JenisPerawatan.lainnya) {
+      return TextFormField(
+        controller: _totalController,
+        decoration: _inputDecoration(
+          context,
+          'Total biaya',
+          Icons.receipt_long_rounded,
+          prefixText: 'Rp ',
+        ),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9\.,]')),
+        ],
+        validator: (value) =>
+            double.tryParse((value ?? '').replaceAll(',', '.')) == null
+            ? 'Total biaya tidak valid'
+            : null,
+      );
+    }
+    final label = isTunas
+        ? 'Jumlah pohon'
+        : isSemprot
+        ? 'Luas pekerjaan'
+        : 'Jumlah';
+    final suffix = isTunas
+        ? 'pohon'
+        : isSemprot
+        ? 'ha'
+        : (_satuanController.text.isEmpty ? 'unit' : _satuanController.text);
+    return TextFormField(
+      controller: _jumlahController,
+      decoration: _inputDecoration(
+        context,
+        label,
+        isSemprot ? Icons.straighten_rounded : Icons.scale_rounded,
+        suffixText: suffix,
+      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: !isTunas),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(
+          RegExp(isTunas ? r'[0-9]' : r'[0-9\.,]'),
+        ),
+      ],
+      validator: (value) {
+        final parsed = double.tryParse((value ?? '').replaceAll(',', '.'));
+        if (parsed == null || parsed <= 0) return '$label harus lebih dari 0';
+        if (isSemprot && _kebun?.luas != null && parsed > _kebun!.luas!) {
+          return 'Luas tidak boleh melebihi luas kebun';
+        }
+        return null;
+      },
+      onChanged: (_) => _recalculateTotal(),
+    );
+  }
+
+  Widget _buildTarifField(BuildContext context) => TextFormField(
+    controller: _tarifController,
+    decoration: _inputDecoration(
+      context,
+      'Tarif / satuan',
+      Icons.payments_outlined,
+      prefixText: 'Rp ',
+    ),
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9\.,]'))],
+    validator: (value) =>
+        double.tryParse((value ?? '').replaceAll(',', '.')) == null
+        ? 'Tarif tidak boleh negatif'
+        : null,
+    onChanged: (_) => _recalculateTotal(),
+  );
+
+  Widget _buildTotalField(BuildContext context) => TextFormField(
+    controller: _totalController,
+    readOnly: _jenis != JenisPerawatan.lainnya,
+    decoration: _inputDecoration(
+      context,
+      'Total biaya',
+      Icons.account_balance_wallet_rounded,
+      prefixText: 'Rp ',
+    ),
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9\.,]'))],
+    validator: (value) =>
+        double.tryParse((value ?? '').replaceAll(',', '.')) == null
+        ? 'Total biaya tidak valid'
+        : null,
+  );
+
+  Widget _buildTeamSection(BuildContext context) => _FormSection(
+    title: 'Tim kerja',
+    icon: Icons.groups_rounded,
+    children: _kebunPekerjaRelations.map((relation) {
+      final worker = _allPekerja.firstWhere(
+        (item) => item.id == relation.pekerjaId,
+      );
+      return CheckboxListTile(
+        value: _selectedPekerjaIds.contains(relation.pekerjaId),
+        onChanged: relation.aktif == true
+            ? (value) => setState(
+                () => value == true
+                    ? _selectedPekerjaIds.add(relation.pekerjaId)
+                    : _selectedPekerjaIds.remove(relation.pekerjaId),
+              )
+            : null,
+        title: Text(worker.nama),
+        subtitle: relation.isDefault == true ? const Text('Default') : null,
+        contentPadding: EdgeInsets.zero,
+      );
+    }).toList(),
+  );
+
   InputDecoration _inputDecoration(
     BuildContext context,
     String label,
-    IconData icon,
-  ) {
+    IconData icon, {
+    String? hintText,
+    String? prefixText,
+    String? suffixText,
+  }) {
     final colors = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
+      hintText: hintText,
+      prefixText: prefixText,
+      suffixText: suffixText,
       prefixIcon: Icon(icon, color: colors.primary),
       filled: true,
       fillColor: colors.surfaceContainerLow,

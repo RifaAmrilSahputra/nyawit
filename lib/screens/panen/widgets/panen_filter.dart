@@ -29,106 +29,123 @@ class PanenFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: searchController,
-          decoration:
-              _decoration(
-                context,
-                'Cari kebun...',
-                Icons.search_rounded,
-              ).copyWith(
-                suffixIcon: searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: searchController.clear,
-                      ),
-              ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: DropdownButtonFormField<int>(
-                key: ValueKey(selectedKebunId),
-                initialValue: selectedKebunId,
-                isExpanded: true,
-                decoration: _decoration(
-                  context,
-                  'Semua kebun',
-                  Icons.park_rounded,
-                ),
-                items: [
-                  const DropdownMenuItem(
-                    value: null,
-                    child: Text('Semua kebun'),
-                  ),
-                  if (isScopedToKebun &&
-                      !kebuns.any((kebun) => kebun.id == selectedKebunId))
-                    DropdownMenuItem(
-                      value: selectedKebunId,
-                      child: Text(scopedKebunName),
-                    ),
-                  ...kebuns.map(
-                    (kebun) => DropdownMenuItem(
-                      value: kebun.id,
-                      child: Text(kebun.nama),
-                    ),
-                  ),
-                ],
-                onChanged: isScopedToKebun ? null : onKebunChanged,
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 560;
+        final dateButton = IconButton(
+          tooltip: 'Filter tanggal',
+          onPressed: () async {
+            final value = await showDatePicker(
+              context: context,
+              firstDate: DateTime(2020),
+              lastDate: DateTime(2100),
+              initialDate: selectedDate ?? DateTime.now(),
+            );
+            if (value != null && context.mounted) onDateChanged(value);
+          },
+          style: IconButton.styleFrom(
+            backgroundColor: selectedDate == null
+                ? Theme.of(context).colorScheme.surfaceContainerLow
+                : Theme.of(context).colorScheme.secondaryContainer,
+            foregroundColor: Theme.of(context).colorScheme.primary,
+            side: BorderSide(
+              color: selectedDate == null
+                  ? Theme.of(context).colorScheme.outlineVariant
+                  : Theme.of(context).colorScheme.outline,
             ),
-            const SizedBox(width: 10),
-            IconButton(
-              tooltip: 'Filter tanggal',
-              onPressed: () async {
-                final value = await showDatePicker(
-                  context: context,
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2100),
-                  initialDate: selectedDate ?? DateTime.now(),
-                );
-                if (value != null && context.mounted) onDateChanged(value);
-              },
-              style: IconButton.styleFrom(
-                backgroundColor: selectedDate == null
-                    ? Theme.of(context).colorScheme.surfaceContainerLow
-                    : const Color(0xFFE2F2E8),
-                foregroundColor: panenGreen,
-                side: BorderSide(
-                  color: selectedDate == null
-                      ? Theme.of(context).colorScheme.outlineVariant
-                      : const Color(0xFFB9DCC4),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              icon: const Icon(Icons.calendar_month_rounded, color: panenGreen),
-            ),
-            if (selectedDate != null)
-              IconButton(
-                onPressed: onDateCleared,
-                icon: const Icon(Icons.close_rounded),
-              ),
-          ],
-        ),
-        if (selectedDate != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Tanggal: ${_formatDate(selectedDate!)}',
-                style: const TextStyle(fontSize: 12, color: panenGreen),
-              ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
-      ],
+          icon: Icon(
+            Icons.calendar_month_rounded,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        );
+
+        final kebunField = DropdownButtonFormField<int>(
+          key: ValueKey(selectedKebunId),
+          initialValue: selectedKebunId,
+          isExpanded: true,
+          decoration: _decoration(context, 'Semua kebun', Icons.park_rounded),
+          items: [
+            const DropdownMenuItem(value: null, child: Text('Semua kebun')),
+            if (isScopedToKebun &&
+                !kebuns.any((kebun) => kebun.id == selectedKebunId))
+              DropdownMenuItem(
+                value: selectedKebunId,
+                child: Text(scopedKebunName),
+              ),
+            ...kebuns.map(
+              (kebun) =>
+                  DropdownMenuItem(value: kebun.id, child: Text(kebun.nama)),
+            ),
+          ],
+          onChanged: isScopedToKebun ? null : onKebunChanged,
+        );
+
+        return Column(
+          children: [
+            TextField(
+              controller: searchController,
+              decoration:
+                  _decoration(
+                    context,
+                    'Cari kebun...',
+                    Icons.search_rounded,
+                  ).copyWith(
+                    suffixIcon: searchController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            onPressed: searchController.clear,
+                          ),
+                  ),
+            ),
+            const SizedBox(height: 10),
+            if (isCompact)
+              Row(
+                children: [
+                  Expanded(child: kebunField),
+                  const SizedBox(width: 8),
+                  dateButton,
+                  if (selectedDate != null)
+                    IconButton(
+                      onPressed: onDateCleared,
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  Expanded(child: kebunField),
+                  const SizedBox(width: 10),
+                  dateButton,
+                  if (selectedDate != null)
+                    IconButton(
+                      onPressed: onDateCleared,
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                ],
+              ),
+            if (selectedDate != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Tanggal: ${_formatDate(selectedDate!)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -140,7 +157,7 @@ class PanenFilter extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: panenGreen, size: 20),
+      prefixIcon: Icon(icon, color: colors.primary, size: 20),
       filled: true,
       fillColor: colors.surfaceContainerLow,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
@@ -154,7 +171,7 @@ class PanenFilter extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: panenGreen, width: 1.5),
+        borderSide: BorderSide(color: colors.primary, width: 1.5),
       ),
     );
   }

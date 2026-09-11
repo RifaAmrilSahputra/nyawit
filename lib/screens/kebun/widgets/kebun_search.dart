@@ -24,7 +24,7 @@ class KebunSearchField extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w400,
         ),
-        prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF176B3A)),
+        prefixIcon: Icon(Icons.search_rounded, color: colors.primary),
         suffixIcon: query.isNotEmpty
             ? IconButton(
                 onPressed: controller.clear,
@@ -49,7 +49,7 @@ class KebunSearchField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(17),
-          borderSide: const BorderSide(color: Color(0xFF176B3A), width: 1.5),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
         ),
       ),
     );

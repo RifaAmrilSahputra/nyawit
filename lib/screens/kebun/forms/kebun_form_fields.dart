@@ -22,10 +22,10 @@ class KebunFormSectionHeader extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: const Color(0xFFE2F2E8),
+            color: colors.secondaryContainer,
             borderRadius: BorderRadius.circular(13),
           ),
-          child: Icon(icon, size: 21, color: const Color(0xFF176B3A)),
+          child: Icon(icon, size: 21, color: colors.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -116,12 +116,12 @@ class KebunFormInput extends StatelessWidget {
           horizontal: 16,
           vertical: 17,
         ),
-        prefixIconColor: const Color(0xFF176B3A),
+        prefixIconColor: colors.primary,
         border: _border(colors, 0.35),
         enabledBorder: _border(colors, 0.35),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(17)),
-          borderSide: BorderSide(color: Color(0xFF176B3A), width: 1.5),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(17),

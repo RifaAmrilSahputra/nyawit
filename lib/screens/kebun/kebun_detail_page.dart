@@ -20,11 +20,12 @@ class KebunDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = (kebun.keterangan?.isNotEmpty ?? false) ? 'Aktif' : 'Siap';
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8F6),
+      backgroundColor: colors.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F8F6),
+        backgroundColor: colors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -37,7 +38,9 @@ class KebunDetailPage extends StatelessWidget {
             padding: const EdgeInsets.only(right: 12),
             child: IconButton(
               onPressed: () => _editKebun(context),
-              style: IconButton.styleFrom(backgroundColor: Colors.white),
+              style: IconButton.styleFrom(
+                backgroundColor: colors.surfaceContainerHighest,
+              ),
               icon: const Icon(Icons.edit_rounded, size: 20),
             ),
           ),
@@ -135,6 +138,13 @@ class _KebunDetailHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF176B3A),
         borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF176B3A).withValues(alpha: 0.16),
+            blurRadius: 22,
+            offset: const Offset(0, 9),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -256,12 +266,20 @@ class _DetailSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(21),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: colors.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,10 +290,10 @@ class _DetailSection extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE4F3E9),
+                  color: colors.secondaryContainer,
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(icon, size: 19, color: const Color(0xFF176B3A)),
+                child: Icon(icon, size: 19, color: colors.primary),
               ),
               const SizedBox(width: 10),
               Flexible(
@@ -314,19 +332,20 @@ class _InfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 13),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(width: 0),
-          Icon(icon, size: 18, color: const Color(0xFF176B3A)),
+          Icon(icon, size: 18, color: colors.primary),
           const SizedBox(width: 11),
           SizedBox(
             width: 105,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF7B827D)),
+              style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
             ),
           ),
           const SizedBox(width: 10),

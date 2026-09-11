@@ -139,18 +139,18 @@ class _PerawatanPageState extends State<PerawatanPage> {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9F7),
+      backgroundColor: colors.surface,
 
       appBar: widget.kebunId == null
           ? AppBar(
-              backgroundColor: const Color(0xFFF7F9F7),
+              backgroundColor: colors.surface,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
               toolbarHeight: 18,
             )
           : AppBar(
-              backgroundColor: const Color(0xFFF7F9F7),
+              backgroundColor: colors.surface,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
@@ -285,14 +285,14 @@ class _SearchField extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(17),
         border: Border.all(
           color: colors.outlineVariant.withValues(alpha: 0.45),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
+            color: colors.shadow.withValues(alpha: 0.12),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -400,7 +400,7 @@ class _KebunDropdown extends StatelessWidget {
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 13),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: colors.outlineVariant.withValues(alpha: 0.45),
@@ -415,7 +415,7 @@ class _KebunDropdown extends StatelessWidget {
             color: colors.onSurfaceVariant,
           ),
           borderRadius: BorderRadius.circular(16),
-          dropdownColor: Colors.white,
+          dropdownColor: colors.surfaceContainer,
 
           hint: Row(
             children: [
@@ -488,7 +488,7 @@ class _JenisDropdown extends StatelessWidget {
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 13),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: colors.outlineVariant.withValues(alpha: 0.45),
@@ -503,7 +503,7 @@ class _JenisDropdown extends StatelessWidget {
             color: colors.onSurfaceVariant,
           ),
           borderRadius: BorderRadius.circular(16),
-          dropdownColor: Colors.white,
+          dropdownColor: colors.surfaceContainer,
 
           hint: Row(
             children: [
@@ -796,6 +796,7 @@ class _SummaryValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -814,8 +815,8 @@ class _SummaryValue extends StatelessWidget {
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: colors.onPrimary,
             fontSize: 12,
             fontWeight: FontWeight.w800,
           ),
@@ -862,7 +863,7 @@ class _PerawatanCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
 
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(21),
 
             border: Border.all(
@@ -871,7 +872,7 @@ class _PerawatanCard extends StatelessWidget {
 
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.035),
+                color: colors.shadow.withValues(alpha: 0.16),
                 blurRadius: 14,
                 offset: const Offset(0, 4),
               ),
@@ -951,7 +952,7 @@ class _PerawatanCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF7F9F7),
+                  color: colors.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
@@ -1236,7 +1237,7 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: colors.outlineVariant.withValues(alpha: 0.35),
@@ -1363,7 +1364,7 @@ class _SkeletonBox extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );

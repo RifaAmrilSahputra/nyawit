@@ -142,18 +142,19 @@ class _PanenPageState extends State<PanenPage> {
   Widget build(BuildContext context) {
     final scopedKebunName = widget.kebunName ?? _kebunName(widget.kebunId ?? 0);
     final isScopedToKebun = widget.kebunId != null;
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colors.surface,
       appBar: widget.kebunId == null
           ? AppBar(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: colors.surface,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: 0,
               toolbarHeight: 18,
             )
           : AppBar(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: colors.surface,
               surfaceTintColor: Colors.transparent,
               scrolledUnderElevation: 0,
               automaticallyImplyLeading: false,
@@ -189,7 +190,7 @@ class _PanenPageState extends State<PanenPage> {
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
-              padding: const EdgeInsets.fromLTRB(18, 6, 18, 32),
+              padding: const EdgeInsets.fromLTRB(18, 10, 18, 36),
               children: [
                 _header(
                   panens.length,
@@ -1281,17 +1282,17 @@ class _PanenCard extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: colors.surface,
+      color: colors.surfaceContainerLow,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: colors.outlineVariant),
+        side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.45)),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 15, 12, 15),
+          padding: const EdgeInsets.fromLTRB(17, 16, 12, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1302,12 +1303,12 @@ class _PanenCard extends StatelessWidget {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5EC),
+                      color: colors.secondaryContainer,
                       borderRadius: BorderRadius.circular(13),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.eco_rounded,
-                      color: _green,
+                      color: colors.primary,
                       size: 21,
                     ),
                   ),
@@ -1361,9 +1362,9 @@ class _PanenCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               isAntar ? 'Antar' : 'Lapangan',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: _green,
+                                color: colors.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

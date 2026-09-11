@@ -3,10 +3,12 @@ import 'package:nyawit/core/theme/app_theme.dart';
 import 'package:nyawit/navigation/main_navigation.dart';
 
 class ThemeController extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.system;
 
   ThemeMode get themeMode => _themeMode;
-  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  bool isDarkMode(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
 
   void setDarkMode(bool enabled) {
     final newMode = enabled ? ThemeMode.dark : ThemeMode.light;
