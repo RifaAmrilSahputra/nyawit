@@ -9,226 +9,161 @@ class TentangPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tentang Aplikasi'), centerTitle: true),
+      backgroundColor: colors.surface,
+
+      appBar: AppBar(
+        backgroundColor: colors.surface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Tentang Aplikasi',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
+
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
           children: [
-            _buildHeader(context),
-            const SizedBox(height: 32),
+            _buildHero(context),
 
-            _buildSectionTitle(
-              context,
-              icon: Icons.info_outline_rounded,
-              title: 'Tentang Nyawit',
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 34),
 
-            Text(
-              'Nyawit adalah aplikasi pengelolaan kebun sawit yang '
-              'dirancang untuk membantu mencatat, mengelola, dan '
-              'memantau aktivitas kebun secara lebih sederhana dan teratur.',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                height: 1.6,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
+            _buildIntro(context),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 34),
 
             _buildSectionTitle(
               context,
               icon: Icons.auto_awesome_rounded,
-              title: 'Fitur Utama',
-            ),
-            const SizedBox(height: 12),
-
-            _buildFeatureCard(
-              context,
-              icon: Icons.landscape_rounded,
-              title: 'Manajemen Kebun',
-              description:
-                  'Kelola data kebun, luas lahan, jumlah pohon, '
-                  'pekerja, dan informasi lainnya.',
+              title: 'Yang bisa dilakukan Nyawit',
             ),
 
-            _buildFeatureCard(
-              context,
-              icon: Icons.agriculture_rounded,
-              title: 'Pencatatan Panen',
-              description:
-                  'Catat hasil panen, berat bersih, harga sawit, '
-                  'sortir, pekerja, truk, dan lokasi timbang.',
-            ),
+            const SizedBox(height: 14),
 
-            _buildFeatureCard(
-              context,
-              icon: Icons.payments_rounded,
-              title: 'Pengelolaan Biaya',
-              description:
-                  'Catat upah panen, ongkos truk, biaya muat, '
-                  'serta pembayaran yang telah dilakukan.',
-            ),
+            _buildFeatureList(context),
 
-            _buildFeatureCard(
-              context,
-              icon: Icons.people_alt_rounded,
-              title: 'Manajemen Pekerja',
-              description:
-                  'Kelola data pekerja dan atur pekerja yang '
-                  'digunakan pada masing-masing kebun.',
-            ),
+            const SizedBox(height: 34),
 
-            _buildFeatureCard(
-              context,
-              icon: Icons.local_shipping_rounded,
-              title: 'Manajemen Truk',
-              description:
-                  'Kelola data truk dan gunakan truk tertentu '
-                  'untuk kebutuhan pengangkutan hasil panen.',
-            ),
+            _buildOfflineSection(context),
 
-            _buildFeatureCard(
-              context,
-              icon: Icons.eco_rounded,
-              title: 'Perawatan Kebun',
-              description:
-                  'Mendukung pencatatan aktivitas perawatan kebun '
-                  'seperti tunas, penyemprotan, dan pemupukan.',
-            ),
-
-            const SizedBox(height: 28),
+            const SizedBox(height: 34),
 
             _buildSectionTitle(
               context,
-              icon: Icons.cloud_off_rounded,
-              title: 'Dibuat untuk Penggunaan Offline',
-            ),
-            const SizedBox(height: 12),
-
-            _buildInfoCard(
-              context,
-              icon: Icons.storage_rounded,
-              title: 'Data Tersimpan di Perangkat',
-              description:
-                  'Nyawit menggunakan database lokal SQLite sehingga '
-                  'data utama dapat digunakan tanpa koneksi internet.',
+              icon: Icons.info_outline_rounded,
+              title: 'Informasi aplikasi',
             ),
 
-            _buildInfoCard(
-              context,
-              icon: Icons.speed_rounded,
-              title: 'Cepat dan Sederhana',
-              description:
-                  'Dirancang agar pencatatan aktivitas kebun dapat '
-                  'dilakukan dengan cepat tanpa proses yang rumit.',
-            ),
+            const SizedBox(height: 14),
 
-            const SizedBox(height: 28),
+            _buildAppInfo(context),
 
-            _buildSectionTitle(
-              context,
-              icon: Icons.settings_suggest_rounded,
-              title: 'Informasi Aplikasi',
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 40),
 
-            _buildAppInfoCard(context),
-
-            const SizedBox(height: 32),
-
-            Center(
-              child: Column(
-                children: [
-                  Icon(Icons.eco_rounded, size: 28, color: colorScheme.primary),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Nyawit',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Pengelolaan Kebun Sawit',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '© 2026 Nyawit',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildFooter(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  Widget _buildHero(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
 
     return Column(
       children: [
         Container(
-          width: 100,
-          height: 100,
+          width: 92,
+          height: 92,
           decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(28),
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(26),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Image.asset(
-              'assets/iconnyawit.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(
-                  Icons.eco_rounded,
-                  size: 54,
-                  color: colorScheme.primary,
-                );
-              },
-            ),
+          padding: const EdgeInsets.all(16),
+          child: Image.asset(
+            'assets/iconnyawit.png',
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(Icons.eco_rounded, size: 48, color: colors.primary);
+            },
           ),
         ),
-        const SizedBox(height: 20),
+
+        const SizedBox(height: 18),
+
         Text(
           appName,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: const TextStyle(
+            fontSize: 27,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.8,
           ),
         ),
-        const SizedBox(height: 6),
+
+        const SizedBox(height: 5),
+
         Text(
           'Pengelolaan Kebun Sawit',
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 13, color: colors.onSurfaceVariant),
         ),
+
         const SizedBox(height: 12),
+
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
+            color: colors.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             'Versi $appVersion',
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurfaceVariant,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: colors.onSurfaceVariant,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIntro(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tentang Nyawit',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: colors.onSurface,
+            letterSpacing: -0.4,
+          ),
+        ),
+
+        const SizedBox(height: 9),
+
+        Text(
+          'Nyawit adalah aplikasi pengelolaan kebun sawit yang '
+          'dirancang untuk membantu mencatat, mengelola, dan '
+          'memantau aktivitas kebun secara lebih sederhana dan teratur.',
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.65,
+            color: colors.onSurfaceVariant,
           ),
         ),
       ],
@@ -240,18 +175,22 @@ class TentangPage extends StatelessWidget {
     required IconData icon,
     required String title,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = Theme.of(context).colorScheme;
 
     return Row(
       children: [
-        Icon(icon, size: 21, color: colorScheme.primary),
-        const SizedBox(width: 10),
+        Icon(icon, size: 18, color: colors.primary),
+
+        const SizedBox(width: 8),
+
         Expanded(
           child: Text(
             title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: colors.onSurface,
+              letterSpacing: -0.1,
             ),
           ),
         ),
@@ -259,152 +198,172 @@ class TentangPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  Widget _buildFeatureList(BuildContext context) {
+    return Column(
+      children: [
+        _FeatureItem(
+          icon: Icons.landscape_rounded,
+          title: 'Manajemen Kebun',
+          description:
+              'Kelola data kebun, luas lahan, jumlah pohon, pekerja, '
+              'dan informasi lainnya.',
+        ),
+
+        _FeatureItem(
+          icon: Icons.agriculture_rounded,
+          title: 'Pencatatan Panen',
+          description:
+              'Catat hasil panen, berat bersih, harga sawit, sortir, '
+              'pekerja, truk, dan lokasi timbang.',
+        ),
+
+        _FeatureItem(
+          icon: Icons.payments_rounded,
+          title: 'Pengelolaan Biaya',
+          description:
+              'Catat upah panen, ongkos truk, biaya muat, '
+              'serta pembayaran yang telah dilakukan.',
+        ),
+
+        _FeatureItem(
+          icon: Icons.people_alt_rounded,
+          title: 'Manajemen Pekerja',
+          description:
+              'Kelola data pekerja dan atur pekerja yang '
+              'digunakan pada masing-masing kebun.',
+        ),
+
+        _FeatureItem(
+          icon: Icons.local_shipping_rounded,
+          title: 'Manajemen Truk',
+          description:
+              'Kelola data truk dan gunakan truk tertentu '
+              'untuk kebutuhan pengangkutan hasil panen.',
+        ),
+
+        _FeatureItem(
+          icon: Icons.eco_rounded,
+          title: 'Perawatan Kebun',
+          description:
+              'Mendukung pencatatan aktivitas perawatan kebun '
+              'seperti tunas, penyemprotan, dan pemupukan.',
+          showDivider: false,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOfflineSection(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colorScheme.outlineVariant),
+        color: colors.primaryContainer.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(13),
-            ),
-            child: Icon(icon, color: colorScheme.primary, size: 22),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.cloud_off_rounded,
+                  size: 20,
+                  color: colors.primary,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Text(
+                  'Dibuat untuk penggunaan offline',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: colors.onSurface,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  description,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    height: 1.45,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+
+          const SizedBox(height: 16),
+
+          _OfflineItem(
+            icon: Icons.storage_rounded,
+            title: 'Data tersimpan di perangkat',
+            description:
+                'Nyawit menggunakan database lokal SQLite sehingga '
+                'data utama dapat digunakan tanpa koneksi internet.',
+          ),
+
+          const SizedBox(height: 14),
+
+          _OfflineItem(
+            icon: Icons.speed_rounded,
+            title: 'Cepat dan sederhana',
+            description:
+                'Dirancang agar pencatatan aktivitas kebun dapat '
+                'dilakukan dengan cepat tanpa proses yang rumit.',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: colorScheme.primary, size: 24),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  description,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    height: 1.5,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppInfoCard(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  Widget _buildAppInfo(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.6)),
       ),
       child: Column(
         children: [
-          _buildInfoRow(
-            context,
+          _InfoRow(
             icon: Icons.apps_rounded,
-            label: 'Nama Aplikasi',
+            label: 'Nama aplikasi',
             value: appName,
           ),
-          _buildDivider(context),
-          _buildInfoRow(
-            context,
+
+          _InfoDivider(),
+
+          _InfoRow(
             icon: Icons.numbers_rounded,
             label: 'Versi',
             value: appVersion,
           ),
-          _buildDivider(context),
-          _buildInfoRow(
-            context,
+
+          _InfoDivider(),
+
+          _InfoRow(
             icon: Icons.phone_android_rounded,
             label: 'Platform',
             value: 'Flutter',
           ),
-          _buildDivider(context),
-          _buildInfoRow(
-            context,
+
+          _InfoDivider(),
+
+          _InfoRow(
             icon: Icons.storage_rounded,
             label: 'Database',
             value: 'SQLite',
           ),
-          _buildDivider(context),
-          _buildInfoRow(
-            context,
+
+          _InfoDivider(),
+
+          _InfoRow(
             icon: Icons.wifi_off_rounded,
             label: 'Mode',
             value: 'Offline',
@@ -414,46 +373,229 @@ class TentangPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  Widget _buildFooter(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        Icon(Icons.eco_rounded, size: 24, color: colors.primary),
+
+        const SizedBox(height: 8),
+
+        Text(
+          'Nyawit',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: colors.onSurface,
+          ),
+        ),
+
+        const SizedBox(height: 3),
+
+        Text(
+          'Pengelolaan Kebun Sawit',
+          style: TextStyle(fontSize: 10.5, color: colors.onSurfaceVariant),
+        ),
+
+        const SizedBox(height: 10),
+
+        Text(
+          '© 2026 Nyawit',
+          style: TextStyle(fontSize: 10, color: colors.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeatureItem extends StatelessWidget {
+  const _FeatureItem({
+    required this.icon,
+    required this.title,
+    required this.description,
+    this.showDivider = true,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: colors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(icon, size: 19, color: colors.onSecondaryContainer),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: colors.onSurface,
+                      ),
+                    ),
+
+                    const SizedBox(height: 3),
+
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 10.8,
+                        height: 1.45,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 0.6,
+            color: colors.outlineVariant.withValues(alpha: 0.5),
+          ),
+      ],
+    );
+  }
+}
+
+class _OfflineItem extends StatelessWidget {
+  const _OfflineItem({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 19, color: colors.primary),
+
+        const SizedBox(width: 11),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: colors.onSurface,
+                ),
+              ),
+
+              const SizedBox(height: 3),
+
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 10.8,
+                  height: 1.45,
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
-          const SizedBox(width: 12),
+          Icon(icon, size: 18, color: colors.onSurfaceVariant),
+
+          const SizedBox(width: 11),
+
           Expanded(
             child: Text(
               label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
             ),
           ),
+
           Text(
             value,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: colors.onSurface,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildDivider(BuildContext context) {
+class _InfoDivider extends StatelessWidget {
+  const _InfoDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Divider(
       height: 1,
-      indent: 48,
-      endIndent: 16,
-      color: Theme.of(context).colorScheme.outlineVariant,
+      indent: 44,
+      endIndent: 15,
+      thickness: 0.6,
+      color: colors.outlineVariant.withValues(alpha: 0.5),
     );
   }
 }

@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -38,6 +38,7 @@ class DatabaseHelper {
     await _createMasterTables(db);
     await _createTransactionTables(db);
     await _createPerawatanTables(db);
+    await _createSettingsTable(db);
   }
 
   Future<void> _createKebunTable(Database db) async {
@@ -82,6 +83,18 @@ class DatabaseHelper {
       await _createStatusKegiatanPerawatanTable(db);
       await _migrateInitialPerawatanStatus(db);
     }
+    if (oldVersion < 9) {
+      await _createSettingsTable(db);
+    }
+  }
+
+  Future<void> _createSettingsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
   }
 
   Future<void> _createPerawatanTables(Database db) async {
