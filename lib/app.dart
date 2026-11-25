@@ -25,7 +25,9 @@ class ThemeController extends ChangeNotifier {
     return Theme.of(context).brightness == Brightness.dark;
   }
 
-  Future<void> load() async {
+  Future<void> load({bool force = false}) async {
+    if (force) _hasUserSelectedPreference = false;
+
     try {
       final db = await DatabaseHelper.instance.database;
       final rows = await db.query(
@@ -35,8 +37,14 @@ class ThemeController extends ChangeNotifier {
         whereArgs: [_themePreferenceKey],
         limit: 1,
       );
-      if (rows.isEmpty) return;
-      if (_hasUserSelectedPreference) return;
+      if (rows.isEmpty) {
+        if (force && _preference != AppThemePreference.light) {
+          _preference = AppThemePreference.light;
+          notifyListeners();
+        }
+        return;
+      }
+      if (_hasUserSelectedPreference && !force) return;
 
       final storedValue = rows.first['value'];
       final loadedPreference = AppThemePreference.values.firstWhere(

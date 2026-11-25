@@ -67,11 +67,22 @@ class AppTheme {
   static ThemeData get darkTheme {
     final base = ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF66BB6A),
-        brightness: Brightness.dark,
-      ),
-      scaffoldBackgroundColor: const Color(0xFF101510),
+      colorScheme:
+          ColorScheme.fromSeed(
+            seedColor: const Color(0xFF66BB6A),
+            brightness: Brightness.dark,
+          ).copyWith(
+            surface: const Color(0xFF0C120E),
+            surfaceDim: const Color(0xFF0C120E),
+            surfaceBright: const Color(0xFF253229),
+            surfaceContainerLowest: const Color(0xFF0C120E),
+            surfaceContainerLow: const Color(0xFF141C17),
+            surfaceContainer: const Color(0xFF18221B),
+            surfaceContainerHigh: const Color(0xFF1B261F),
+            surfaceContainerHighest: const Color(0xFF1B261F),
+            outlineVariant: const Color(0xFF233229),
+          ),
+      scaffoldBackgroundColor: const Color(0xFF0C120E),
       cardTheme: const CardThemeData(margin: EdgeInsets.zero),
       appBarTheme: const AppBarTheme(
         centerTitle: false,

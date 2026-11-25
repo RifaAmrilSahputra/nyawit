@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nyawit/models/kebun.dart';
+import 'package:nyawit/screens/panen/widgets/panen_form_components.dart';
 
 const panenGreen = Color(0xFF176B3A);
 
@@ -48,10 +49,17 @@ class PanenFilter extends StatelessWidget {
                 ? Theme.of(context).colorScheme.surfaceContainerLow
                 : Theme.of(context).colorScheme.secondaryContainer,
             foregroundColor: Theme.of(context).colorScheme.primary,
+            minimumSize: const Size(48, 56),
+            fixedSize: const Size(56, 56),
+            padding: EdgeInsets.zero,
             side: BorderSide(
               color: selectedDate == null
-                  ? Theme.of(context).colorScheme.outlineVariant
-                  : Theme.of(context).colorScheme.outline,
+                  ? Theme.of(
+                      context,
+                    ).colorScheme.outlineVariant.withValues(alpha: .65)
+                  : Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: .45),
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -63,25 +71,14 @@ class PanenFilter extends StatelessWidget {
           ),
         );
 
-        final kebunField = DropdownButtonFormField<int>(
-          key: ValueKey(selectedKebunId),
-          initialValue: selectedKebunId,
-          isExpanded: true,
-          decoration: _decoration(context, 'Semua kebun', Icons.park_rounded),
-          items: [
-            const DropdownMenuItem(value: null, child: Text('Semua kebun')),
-            if (isScopedToKebun &&
-                !kebuns.any((kebun) => kebun.id == selectedKebunId))
-              DropdownMenuItem(
-                value: selectedKebunId,
-                child: Text(scopedKebunName),
-              ),
-            ...kebuns.map(
-              (kebun) =>
-                  DropdownMenuItem(value: kebun.id, child: Text(kebun.nama)),
-            ),
-          ],
-          onChanged: isScopedToKebun ? null : onKebunChanged,
+        final kebunField = PanenGardenSelector(
+          kebuns: kebuns,
+          selectedKebunId: selectedKebunId,
+          onChanged: onKebunChanged,
+          enabled: !isScopedToKebun,
+          showAllOption: !isScopedToKebun,
+          isRequired: false,
+          fallbackKebunName: isScopedToKebun ? scopedKebunName : null,
         );
 
         return Column(
@@ -163,11 +160,15 @@ class PanenFilter extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: colors.outlineVariant),
+        borderSide: BorderSide(
+          color: colors.outlineVariant.withValues(alpha: .65),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: colors.outlineVariant),
+        borderSide: BorderSide(
+          color: colors.outlineVariant.withValues(alpha: .65),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),

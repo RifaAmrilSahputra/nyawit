@@ -18,6 +18,9 @@ import 'package:nyawit/repositories/pengangkutan_repository.dart';
 import 'package:nyawit/repositories/truk_repository.dart';
 import 'package:nyawit/screens/panen/panen_form_page.dart';
 
+const _darkForest = Color(0xFF123B2D);
+const _darkForestHighlight = Color(0xFF205640);
+
 class PanenDetailPage extends StatefulWidget {
   const PanenDetailPage({super.key, required this.panenId});
 
@@ -136,7 +139,7 @@ class _PanenDetailPageState extends State<PanenDetailPage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            letterSpacing: -0.2,
+            letterSpacing: -0.3,
           ),
         ),
         actions: [
@@ -242,7 +245,6 @@ class _DetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final panen = data.panen;
 
     final nilaiPanen = panen.beratBersih * panen.hargaSawit;
@@ -258,177 +260,87 @@ class _DetailBody extends StatelessWidget {
     );
 
     return RefreshIndicator(
-      color: colors.primary,
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 36),
         children: [
           _FinancialSummary(nilaiPanen: nilaiPanen, totalBiaya: totalBiaya),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 32),
 
-          _SectionLabel(
+          _SectionTitle(
             icon: Icons.agriculture_outlined,
-            title: 'Informasi panen',
-          ),
-          const SizedBox(height: 8),
-
-          _InfoGroup(
-            children: [
-              _InfoRow('Kebun', data.kebun?.nama ?? 'Kebun tidak ditemukan'),
-              _InfoRow('Hari, tanggal', _formatDate(panen.tanggal)),
-              _InfoRow(
-                'Metode',
-                panen.shippingMethod == ShippingMethod.antar
-                    ? 'Antar'
-                    : 'Lapangan',
-              ),
-              _InfoRow('Lokasi timbang', data.lokasiName),
-              _InfoRow(
-                'Keterangan',
-                panen.keterangan?.trim().isNotEmpty == true
-                    ? panen.keterangan!
-                    : '—',
-                isLast: true,
-              ),
-            ],
+            title: 'Informasi Panen',
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
 
-          _SectionLabel(icon: Icons.scale_outlined, title: 'Hasil panen'),
-          const SizedBox(height: 8),
+          _HarvestInformation(data: data),
 
-          _InfoGroup(
-            children: [
-              _InfoRow('Berat bersih', '${_number(panen.beratBersih)} Kg'),
-              _InfoRow('Harga sawit', _rupiah(panen.hargaSawit)),
-              _InfoRow('Nilai panen', _rupiah(nilaiPanen), emphasize: true),
-              _InfoRow('Sortir', '${_number(panen.sortir)} Kg', isLast: true),
-            ],
-          ),
+          const SizedBox(height: 32),
 
-          const SizedBox(height: 28),
+          _SectionTitle(icon: Icons.scale_outlined, title: 'Hasil Panen'),
 
-          _SectionLabel(icon: Icons.groups_outlined, title: 'Pekerja'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          _InfoGroup(
-            children: [
-              if (data.panenPekerja.isEmpty)
-                const _EmptySection('Belum ada pekerja yang tercatat.')
-              else
-                ...data.panenPekerja.asMap().entries.map((entry) {
-                  final isLast = entry.key == data.panenPekerja.length - 1;
+          _HarvestMetrics(panen: panen, nilaiPanen: nilaiPanen),
 
-                  return _ListRow(
-                    icon: Icons.person_outline_rounded,
-                    label: data.pekerjaName(entry.value.pekerjaId),
-                    isLast: isLast,
-                  );
-                }),
-            ],
-          ),
+          const SizedBox(height: 32),
 
-          const SizedBox(height: 28),
+          _SectionTitle(icon: Icons.groups_outlined, title: 'Pekerja'),
 
-          _SectionLabel(
+          const SizedBox(height: 12),
+
+          _WorkersSection(data: data),
+
+          const SizedBox(height: 32),
+
+          _SectionTitle(
             icon: Icons.local_shipping_outlined,
             title: 'Pengangkutan',
           ),
-          const SizedBox(height: 8),
 
-          _InfoGroup(
-            children: [
-              if (panen.shippingMethod == ShippingMethod.antar) ...[
-                if (data.pengangkutan.isEmpty)
-                  const _EmptySection('Belum ada data pengangkutan.')
-                else ...[
-                  ...data.pengangkutan.asMap().entries.map((entry) {
-                    final isLast = entry.key == data.pengangkutan.length - 1;
+          const SizedBox(height: 12),
 
-                    return _ListRow(
-                      icon: Icons.local_shipping_outlined,
-                      label: data.trukName(entry.value.trukId),
-                      value: '${_number(entry.value.beratBersih)} Kg',
-                      isLast: isLast,
-                    );
-                  }),
-                  _InfoRow(
-                    'Total pengangkutan',
-                    '${_number(totalPengangkutan)} Kg',
-                    emphasize: true,
-                    isLast: true,
-                  ),
-                ],
-              ] else
-                const _EmptySection('Hasil panen ditimbang di lapangan.'),
-            ],
+          _TransportationSection(
+            data: data,
+            panen: panen,
+            totalPengangkutan: totalPengangkutan,
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
 
-          _SectionLabel(icon: Icons.receipt_long_outlined, title: 'Biaya'),
-          const SizedBox(height: 8),
+          _SectionTitle(icon: Icons.receipt_long_outlined, title: 'Biaya'),
 
-          _InfoGroup(
-            children: [
-              if (data.biaya.isEmpty)
-                const _EmptySection(
-                  'Belum ada snapshot biaya pada transaksi ini.',
-                )
-              else ...[
-                ...data.biaya.asMap().entries.map((entry) {
-                  final isLast = entry.key == data.biaya.length - 1;
+          const SizedBox(height: 12),
 
-                  return _BiayaRow(item: entry.value, isLast: isLast);
-                }),
-                _InfoRow(
-                  'Total biaya',
-                  _rupiah(totalBiaya),
-                  emphasize: true,
-                  isLast: true,
-                ),
-              ],
-            ],
-          ),
+          _CostSection(data: data, totalBiaya: totalBiaya),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
 
-          _SectionLabel(icon: Icons.payments_outlined, title: 'Pembayaran'),
-          const SizedBox(height: 8),
+          _SectionTitle(icon: Icons.payments_outlined, title: 'Pembayaran'),
 
-          _InfoGroup(
-            children: [
-              if (data.biaya.isEmpty)
-                const _EmptySection('Belum ada data pembayaran.')
-              else
-                ...data.biaya.asMap().entries.map((entry) {
-                  return _PaymentRow(
-                    item: entry.value,
-                    isLast: entry.key == data.biaya.length - 1,
-                  );
-                }),
-            ],
-          ),
+          const SizedBox(height: 12),
 
-          const SizedBox(height: 28),
+          _PaymentSection(data: data),
+
+          const SizedBox(height: 32),
 
           SizedBox(
-            height: 50,
+            height: 58,
             child: FilledButton.icon(
               onPressed: onEdit,
               icon: const Icon(Icons.edit_rounded, size: 19),
               label: const Text(
                 'Edit Panen',
-                style: TextStyle(fontWeight: FontWeight.w700),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               ),
               style: FilledButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(17),
                 ),
               ),
             ),
@@ -438,6 +350,10 @@ class _DetailBody extends StatelessWidget {
     );
   }
 }
+
+// ============================================================
+// FINANCIAL SUMMARY
+// ============================================================
 
 class _FinancialSummary extends StatelessWidget {
   const _FinancialSummary({required this.nilaiPanen, required this.totalBiaya});
@@ -448,13 +364,22 @@ class _FinancialSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasilBersih = nilaiPanen - totalBiaya;
+    final summaryTextColor = isDark ? Colors.white : colors.onPrimaryContainer;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
       decoration: BoxDecoration(
-        color: colors.primaryContainer,
-        borderRadius: BorderRadius.circular(22),
+        color: isDark ? null : colors.primaryContainer,
+        gradient: isDark
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_darkForest, _darkForestHighlight],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,50 +387,83 @@ class _FinancialSummary extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(13),
+                  color: colors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.account_balance_wallet_outlined,
-                  size: 21,
+                  size: 19,
                   color: colors.primary,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Ringkasan keuangan',
-                  style: TextStyle(
-                    color: colors.onPrimaryContainer,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.2,
-                  ),
+              const SizedBox(width: 11),
+              Text(
+                'Ringkasan keuangan',
+                style: TextStyle(
+                  color: summaryTextColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.1,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          _SummaryValue(label: 'Nilai panen', value: _rupiah(nilaiPanen)),
-          _SummaryValue(label: 'Total biaya', value: _rupiah(totalBiaya)),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Divider(
-              height: 1,
-              color: colors.onPrimaryContainer.withValues(alpha: 0.12),
+          Text(
+            'HASIL BERSIH',
+            style: TextStyle(
+              color: summaryTextColor.withValues(alpha: 0.70),
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.7,
             ),
           ),
 
-          _SummaryValue(
-            label: 'Hasil bersih',
-            value: _rupiah(hasilBersih),
-            emphasize: true,
+          const SizedBox(height: 5),
+
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _rupiah(hasilBersih),
+              style: TextStyle(
+                color: summaryTextColor,
+                fontSize: 30,
+                height: 1.05,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 22),
+
+          Container(height: 1, color: summaryTextColor.withValues(alpha: 0.18)),
+
+          const SizedBox(height: 16),
+
+          Row(
+            children: [
+              Expanded(
+                child: _FinancialSecondaryValue(
+                  label: 'Nilai panen',
+                  value: _rupiah(nilaiPanen),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _FinancialSecondaryValue(
+                  label: 'Total biaya',
+                  value: _rupiah(totalBiaya),
+                  alignEnd: true,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -513,57 +471,58 @@ class _FinancialSummary extends StatelessWidget {
   }
 }
 
-class _SummaryValue extends StatelessWidget {
-  const _SummaryValue({
+class _FinancialSecondaryValue extends StatelessWidget {
+  const _FinancialSecondaryValue({
     required this.label,
     required this.value,
-    this.emphasize = false,
+    this.alignEnd = false,
   });
 
   final String label;
   final String value;
-  final bool emphasize;
+  final bool alignEnd;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: colors.onPrimaryContainer.withValues(alpha: 0.65),
-                fontSize: 11.5,
-                fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
-              ),
+    return Column(
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: colors.onPrimaryContainer.withValues(alpha: 0.58),
+            fontSize: 10.5,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
+          child: Text(
+            value,
+            style: TextStyle(
+              color: colors.onPrimaryContainer,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(width: 16),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                color: colors.onPrimaryContainer,
-                fontSize: emphasize ? 16 : 13,
-                fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
-                letterSpacing: emphasize ? -0.2 : 0,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.icon, required this.title});
+// ============================================================
+// SECTION TITLE
+// ============================================================
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.icon, required this.title});
 
   final IconData icon;
   final String title;
@@ -579,10 +538,10 @@ class _SectionLabel extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
             color: colors.onSurface,
-            letterSpacing: -0.1,
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.15,
           ),
         ),
       ],
@@ -590,10 +549,137 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-class _InfoGroup extends StatelessWidget {
-  const _InfoGroup({required this.children});
+// ============================================================
+// INFORMASI PANEN
+// ============================================================
 
-  final List<Widget> children;
+class _HarvestInformation extends StatelessWidget {
+  const _HarvestInformation({required this.data});
+
+  final _PanenDetailData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final panen = data.panen;
+
+    final kebunName = data.kebun?.nama ?? 'Kebun tidak ditemukan';
+
+    final keterangan = panen.keterangan?.trim().isNotEmpty == true
+        ? panen.keterangan!
+        : '—';
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            kebunName,
+            style: TextStyle(
+              color: colors.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
+              height: 1.15,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          Text(
+            _formatDate(panen.tanggal),
+            style: TextStyle(
+              color: colors.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            height: 1,
+            color: colors.outlineVariant.withValues(alpha: 0.45),
+          ),
+
+          const SizedBox(height: 16),
+
+          _CompactInfoRow(
+            label: 'Metode',
+            value: panen.shippingMethod == ShippingMethod.antar
+                ? 'Antar'
+                : 'Lapangan',
+          ),
+
+          const SizedBox(height: 13),
+
+          _CompactInfoRow(label: 'Lokasi timbang', value: data.lokasiName),
+
+          const SizedBox(height: 13),
+
+          _CompactInfoRow(label: 'Keterangan', value: keterangan),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompactInfoRow extends StatelessWidget {
+  const _CompactInfoRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 92,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: colors.onSurfaceVariant,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: colors.onSurface,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// HASIL PANEN
+// ============================================================
+
+class _HarvestMetrics extends StatelessWidget {
+  const _HarvestMetrics({required this.panen, required this.nilaiPanen});
+
+  final Panen panen;
+  final double nilaiPanen;
 
   @override
   Widget build(BuildContext context) {
@@ -602,348 +688,117 @@ class _InfoGroup extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: 0.55),
-        ),
+        borderRadius: BorderRadius.circular(20),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(children: children),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow(
-    this.label,
-    this.value, {
-    this.emphasize = false,
-    this.isLast = false,
-  });
-
-  final String label;
-  final String value;
-  final bool emphasize;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        children: [
+          Row(
             children: [
               Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: colors.onSurfaceVariant,
-                    fontWeight: emphasize ? FontWeight.w600 : FontWeight.w500,
-                  ),
+                child: _MetricItem(
+                  label: 'BERAT BERSIH',
+                  value: '${_number(panen.beratBersih)} Kg',
                 ),
               ),
-              const SizedBox(width: 16),
-              Flexible(
-                flex: 2,
-                child: Text(
-                  value,
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                    fontSize: emphasize ? 13 : 12.5,
-                    fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
-                    color: colors.onSurface,
-                    height: 1.35,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            thickness: 0.6,
-            indent: 14,
-            endIndent: 14,
-            color: colors.outlineVariant.withValues(alpha: 0.5),
-          ),
-      ],
-    );
-  }
-}
-
-class _ListRow extends StatelessWidget {
-  const _ListRow({
-    required this.icon,
-    required this.label,
-    this.value,
-    this.isLast = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final String? value;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
               Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 17, color: colors.primary),
+                width: 1,
+                height: 84,
+                color: colors.outlineVariant.withValues(alpha: 0.35),
               ),
-              const SizedBox(width: 11),
               Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: colors.onSurface,
-                  ),
+                child: _MetricItem(
+                  label: 'HARGA SAWIT',
+                  value: _rupiah(panen.hargaSawit),
+                  alignEnd: true,
                 ),
               ),
-              if (value != null) ...[
-                const SizedBox(width: 12),
-                Text(
-                  value!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: colors.onSurface,
-                  ),
-                ),
-              ],
             ],
           ),
-        ),
-        if (!isLast)
-          Divider(
+
+          Container(
             height: 1,
-            thickness: 0.6,
-            indent: 57,
-            endIndent: 14,
-            color: colors.outlineVariant.withValues(alpha: 0.5),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            color: colors.outlineVariant.withValues(alpha: 0.35),
           ),
-      ],
-    );
-  }
-}
 
-class _BiayaRow extends StatelessWidget {
-  const _BiayaRow({required this.item, this.isLast = false});
-
-  final BiayaPanen item;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
+              Expanded(
+                child: _MetricItem(
+                  label: 'SORTIR',
+                  value: '${_number(panen.sortir)} Kg',
+                ),
+              ),
               Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.receipt_long_outlined,
-                  size: 17,
-                  color: colors.primary,
-                ),
+                width: 1,
+                height: 84,
+                color: colors.outlineVariant.withValues(alpha: 0.35),
               ),
-              const SizedBox(width: 11),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _biayaName(item.jenis),
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: colors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '${_rupiah(item.tarifPerKg)}/Kg',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                _rupiah(item.totalBiaya),
-                textAlign: TextAlign.end,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
-                  color: colors.onSurface,
+                child: _MetricItem(
+                  label: 'NILAI PANEN',
+                  value: _rupiah(nilaiPanen),
+                  emphasize: true,
+                  alignEnd: true,
                 ),
               ),
             ],
           ),
-        ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            thickness: 0.6,
-            indent: 57,
-            endIndent: 14,
-            color: colors.outlineVariant.withValues(alpha: 0.5),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _PaymentRow extends StatelessWidget {
-  const _PaymentRow({required this.item, this.isLast = false});
-
-  final BiayaPanen item;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    final statusColor = item.status == 'Lunas'
-        ? colors.primary
-        : item.status == 'Kurang Bayar'
-        ? Colors.orange.shade800
-        : Colors.blue.shade700;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _biayaName(item.jenis),
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
-                        color: colors.onSurface,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      item.status,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              _CompactPaymentRow(
-                label: 'Total biaya',
-                value: _rupiah(item.totalBiaya),
-              ),
-              _CompactPaymentRow(
-                label: 'Dibayarkan',
-                value: _rupiah(item.jumlahDibayarkan),
-              ),
-              _CompactPaymentRow(
-                label: 'Selisih',
-                value: _rupiah(item.jumlahDibayarkan - item.totalBiaya),
-                emphasize: true,
-              ),
-            ],
-          ),
-        ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            thickness: 0.6,
-            indent: 14,
-            endIndent: 14,
-            color: colors.outlineVariant.withValues(alpha: 0.5),
-          ),
-      ],
-    );
-  }
-}
-
-class _CompactPaymentRow extends StatelessWidget {
-  const _CompactPaymentRow({
+class _MetricItem extends StatelessWidget {
+  const _MetricItem({
     required this.label,
     required this.value,
     this.emphasize = false,
+    this.alignEnd = false,
   });
 
   final String label;
   final String value;
   final bool emphasize;
+  final bool alignEnd;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 19),
+      child: Column(
+        crossAxisAlignment: alignEnd
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
+          Text(
+            label,
+            textAlign: alignEnd ? TextAlign.right : TextAlign.left,
+            style: TextStyle(
+              color: colors.onSurfaceVariant,
+              fontSize: 9.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 11.5,
-              fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
-              color: colors.onSurface,
+
+          const SizedBox(height: 7),
+
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: emphasize ? 17 : 15,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.3,
+              ),
             ),
           ),
         ],
@@ -952,33 +807,722 @@ class _CompactPaymentRow extends StatelessWidget {
   }
 }
 
-class _EmptySection extends StatelessWidget {
-  const _EmptySection(this.message);
+// ============================================================
+// PEKERJA
+// ============================================================
 
+class _WorkersSection extends StatelessWidget {
+  const _WorkersSection({required this.data});
+
+  final _PanenDetailData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    if (data.panenPekerja.isEmpty) {
+      return _MinimalEmptyState(
+        icon: Icons.person_outline_rounded,
+        message: 'Belum ada pekerja yang tercatat.',
+      );
+    }
+
+    final count = data.panenPekerja.length;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  'Tim panen',
+                  style: TextStyle(
+                    color: colors.onSurface,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+              Text(
+                '$count orang',
+                style: TextStyle(
+                  color: colors.primary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          Wrap(
+            spacing: 9,
+            runSpacing: 9,
+            children: data.panenPekerja.map((item) {
+              final name = data.pekerjaName(item.pekerjaId);
+
+              return _WorkerChip(name: name);
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkerChip extends StatelessWidget {
+  const _WorkerChip({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: colors.outlineVariant.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 27,
+            height: 27,
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initial,
+                style: TextStyle(
+                  color: colors.primary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            name,
+            style: TextStyle(
+              color: colors.onSurface,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// PENGANGKUTAN
+// ============================================================
+
+class _TransportationSection extends StatelessWidget {
+  const _TransportationSection({
+    required this.data,
+    required this.panen,
+    required this.totalPengangkutan,
+  });
+
+  final _PanenDetailData data;
+  final Panen panen;
+  final double totalPengangkutan;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    if (panen.shippingMethod == ShippingMethod.lapangan) {
+      return _MinimalEmptyState(
+        icon: Icons.scale_outlined,
+        message: 'Hasil panen ditimbang di lapangan.',
+      );
+    }
+
+    if (data.pengangkutan.isEmpty) {
+      return _MinimalEmptyState(
+        icon: Icons.local_shipping_outlined,
+        message: 'Belum ada data pengangkutan.',
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 17),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          ...data.pengangkutan.asMap().entries.map((entry) {
+            return _TransportationItem(
+              label: data.trukName(entry.value.trukId),
+              weight: '${_number(entry.value.beratBersih)} Kg',
+              isLast: entry.key == data.pengangkutan.length - 1,
+            );
+          }),
+
+          const SizedBox(height: 16),
+
+          Container(
+            height: 1,
+            color: colors.outlineVariant.withValues(alpha: 0.35),
+          ),
+
+          const SizedBox(height: 14),
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOTAL PENGANGKUTAN',
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Berat bersih seluruh kendaraan',
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.75),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '${_number(totalPengangkutan)} Kg',
+                  style: TextStyle(
+                    color: colors.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransportationItem extends StatelessWidget {
+  const _TransportationItem({
+    required this.label,
+    required this.weight,
+    required this.isLast,
+  });
+
+  final String label;
+  final String weight;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 15),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.09),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.local_shipping_outlined,
+              size: 19,
+              color: colors.primary,
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                height: 1.2,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              weight,
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// BIAYA
+// ============================================================
+
+class _CostSection extends StatelessWidget {
+  const _CostSection({required this.data, required this.totalBiaya});
+
+  final _PanenDetailData data;
+  final double totalBiaya;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    if (data.biaya.isEmpty) {
+      return _MinimalEmptyState(
+        icon: Icons.receipt_long_outlined,
+        message: 'Belum ada snapshot biaya pada transaksi ini.',
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 19),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          ...data.biaya.asMap().entries.map((entry) {
+            return _CostItem(
+              item: entry.value,
+              isLast: entry.key == data.biaya.length - 1,
+            );
+          }),
+
+          const SizedBox(height: 5),
+
+          Container(
+            height: 1,
+            color: colors.outlineVariant.withValues(alpha: 0.38),
+          ),
+
+          const SizedBox(height: 17),
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOTAL BIAYA',
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Seluruh biaya transaksi',
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.75),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    _rupiah(totalBiaya),
+                    style: TextStyle(
+                      color: colors.onSurface,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.7,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CostItem extends StatelessWidget {
+  const _CostItem({required this.item, required this.isLast});
+
+  final BiayaPanen item;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 17),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              size: 18,
+              color: colors.primary,
+            ),
+          ),
+
+          const SizedBox(width: 11),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _biayaName(item.jenis),
+                  style: TextStyle(
+                    color: colors.onSurface,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${_rupiah(item.tarifPerKg)}/Kg',
+                  style: TextStyle(
+                    color: colors.onSurfaceVariant,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                _rupiah(item.totalBiaya),
+                textAlign: TextAlign.end,
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// PEMBAYARAN
+// ============================================================
+
+class _PaymentSection extends StatelessWidget {
+  const _PaymentSection({required this.data});
+
+  final _PanenDetailData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    if (data.biaya.isEmpty) {
+      return _MinimalEmptyState(
+        icon: Icons.payments_outlined,
+        message: 'Belum ada data pembayaran.',
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: data.biaya.asMap().entries.map((entry) {
+          return _PaymentItem(
+            item: entry.value,
+            isLast: entry.key == data.biaya.length - 1,
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _PaymentItem extends StatelessWidget {
+  const _PaymentItem({required this.item, required this.isLast});
+
+  final BiayaPanen item;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final statusColor = item.status == 'Lunas'
+        ? colors.primary
+        : item.status == 'Kurang Bayar'
+        ? isDark
+              ? const Color(0xFFF1CC75)
+              : Colors.orange.shade800
+        : isDark
+        ? const Color(0xFF90CAF9)
+        : Colors.blue.shade700;
+
+    final difference = item.jumlahDibayarkan - item.totalBiaya;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(18, 18, 18, isLast ? 18 : 17),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  _biayaName(item.jenis),
+                  style: TextStyle(
+                    color: colors.onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 10),
+
+              _PaymentStatusBadge(status: item.status, color: statusColor),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          Text(
+            'DIBAYARKAN',
+            style: TextStyle(
+              color: colors.onSurfaceVariant,
+              fontSize: 9.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _rupiah(item.jumlahDibayarkan),
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.7,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            'dari total biaya ${_rupiah(item.totalBiaya)}',
+            style: TextStyle(
+              color: colors.onSurfaceVariant,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+
+          const SizedBox(height: 17),
+
+          Container(
+            height: 1,
+            color: colors.outlineVariant.withValues(alpha: 0.35),
+          ),
+
+          const SizedBox(height: 14),
+
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Selisih',
+                  style: TextStyle(
+                    color: colors.onSurfaceVariant,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    _rupiah(difference),
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentStatusBadge extends StatelessWidget {
+  const _PaymentStatusBadge({required this.status, required this.color});
+
+  final String status;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: color,
+          fontSize: 9.5,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// EMPTY STATE
+// ============================================================
+
+class _MinimalEmptyState extends StatelessWidget {
+  const _MinimalEmptyState({required this.icon, required this.message});
+
+  final IconData icon;
   final String message;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 17,
-            color: colors.onSurfaceVariant,
-          ),
-          const SizedBox(width: 9),
+          Icon(icon, size: 18, color: colors.onSurfaceVariant),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
               style: TextStyle(
                 color: colors.onSurfaceVariant,
-                fontSize: 12,
-                height: 1.4,
+                fontSize: 11.5,
+                height: 1.35,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -987,6 +1531,10 @@ class _EmptySection extends StatelessWidget {
     );
   }
 }
+
+// ============================================================
+// EMPTY DETAIL
+// ============================================================
 
 class _EmptyDetailView extends StatelessWidget {
   const _EmptyDetailView();
@@ -1023,6 +1571,10 @@ class _EmptyDetailView extends StatelessWidget {
   }
 }
 
+// ============================================================
+// ERROR
+// ============================================================
+
 class _ErrorView extends StatelessWidget {
   const _ErrorView({required this.onRetry});
 
@@ -1039,6 +1591,10 @@ class _ErrorView extends StatelessWidget {
     );
   }
 }
+
+// ============================================================
+// HELPERS
+// ============================================================
 
 String _biayaName(TarifJenis jenis) => switch (jenis) {
   TarifJenis.upahPanen => 'Upah Panen',

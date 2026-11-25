@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nyawit/data/dummy/settings_dummy.dart';
 import 'package:nyawit/screens/lainnya/app_settings_page.dart';
+import 'package:nyawit/screens/lainnya/backup_restore_page.dart';
+import 'package:nyawit/screens/lainnya/laporan_page.dart';
 import 'package:nyawit/screens/lainnya/master_data_page.dart';
 import 'package:nyawit/screens/lainnya/tarif_page.dart';
 import 'package:nyawit/screens/lainnya/tentang_aplikasi.dart';
@@ -81,6 +83,21 @@ class LainnyaPage extends StatelessWidget {
           Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (_) => const LokasiTimbangPage()));
+        };
+
+      case 'Backup data':
+      case 'Restore data':
+        return () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const BackupRestorePage()));
+        };
+
+      case 'Laporan':
+        return () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const LaporanPage()));
         };
 
       case 'Tentang aplikasi':

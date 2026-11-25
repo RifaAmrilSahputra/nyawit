@@ -18,7 +18,7 @@ class KebunSearchField extends StatelessWidget {
       controller: controller,
       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       decoration: InputDecoration(
-        hintText: 'Cari nama atau lokasi kebun...',
+        hintText: 'Cari nama atau lokasi kebun',
         hintStyle: TextStyle(
           color: colors.onSurfaceVariant.withValues(alpha: 0.6),
           fontSize: 13,

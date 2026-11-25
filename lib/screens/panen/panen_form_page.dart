@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:nyawit/models/panen.dart';
 import 'package:nyawit/screens/panen/panen_page.dart';
 
-/// Public form entry point for creating and editing harvest transactions.
-/// The existing implementation is kept intact in PanenPage's implementation
-/// library so this refactor does not alter CRUD or validation behavior.
+/// Form entry point for creating and editing harvest transactions.
+///
+/// The form implementation remains private to the panen feature while callers
+/// only depend on this public page API.
 class PanenFormPage extends StatefulWidget {
   const PanenFormPage({
     super.key,

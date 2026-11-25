@@ -12,9 +12,10 @@ import 'package:nyawit/providers/master_data_provider.dart';
 const Color _primaryGreen = Color(0xFF176B3A);
 const Color _darkGreen = Color(0xFF0E4F2A);
 const Color _lightGreen = Color(0xFFEAF5ED);
-const Color _background = Color(0xFFF5F7F5);
 const Color _textPrimary = Color(0xFF172019);
 const Color _textSecondary = Color(0xFF7B847D);
+const Color _darkForest = Color(0xFF123B2D);
+const Color _darkForestHighlight = Color(0xFF205640);
 
 // ============================================================
 // PEKERJA PAGE
@@ -416,15 +417,17 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: _background,
+      backgroundColor: colors.surface,
       body: SafeArea(child: _buildContent()),
       floatingActionButton:
           widget.items.isNotEmpty && !widget.isLoading && widget.error == null
           ? FloatingActionButton.extended(
               onPressed: widget.onAdd,
-              backgroundColor: _primaryGreen,
-              foregroundColor: Colors.white,
+              backgroundColor: colors.primary,
+              foregroundColor: colors.onPrimary,
               elevation: 4,
               icon: const Icon(Icons.add_rounded),
               label: const Text(
@@ -456,7 +459,7 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
     final filtered = _filteredItems();
 
     return RefreshIndicator(
-      color: _primaryGreen,
+      color: Theme.of(context).colorScheme.primary,
       onRefresh: widget.onRetry,
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(
@@ -504,8 +507,10 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
   // ==========================================================
 
   Widget _buildTopBar() {
+    final colors = Theme.of(context).colorScheme;
+
     return SliverAppBar(
-      backgroundColor: _background,
+      backgroundColor: colors.surface,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -519,17 +524,17 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
               child: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                color: _textPrimary,
+                color: colors.onSurface,
               ),
             ),
           Container(
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: _lightGreen,
+              color: colors.secondaryContainer,
               borderRadius: BorderRadius.circular(13),
             ),
-            child: Icon(widget.icon, color: _primaryGreen, size: 22),
+            child: Icon(widget.icon, color: colors.primary, size: 22),
           ),
           const SizedBox(width: 12),
           Column(
@@ -537,17 +542,17 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
             children: [
               Text(
                 widget.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
-                  color: _textPrimary,
+                  color: colors.onSurface,
                   letterSpacing: -0.4,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 'Master data',
-                style: const TextStyle(fontSize: 11, color: _textSecondary),
+                style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
               ),
             ],
           ),
@@ -561,18 +566,23 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
   // ==========================================================
 
   Widget _buildHero() {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = colors.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [_primaryGreen, _darkGreen],
+          colors: isDark
+              ? const [_darkForest, _darkForestHighlight]
+              : [_primaryGreen, _darkGreen],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: _primaryGreen.withValues(alpha: 0.18),
+            color: colors.primary.withValues(alpha: 0.18),
             blurRadius: 20,
             offset: const Offset(0, 9),
           ),
@@ -609,14 +619,14 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Ringkasan Data',
                           style: TextStyle(
-                            color: Color(0xFFBFE0CA),
+                            color: Colors.white.withValues(alpha: 0.72),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -682,15 +692,17 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
   // ==========================================================
 
   Widget _buildSearch() {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE4E9E5)),
+        border: Border.all(color: colors.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
+            color: colors.shadow.withValues(alpha: 0.025),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -701,19 +713,22 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
           hintText: 'Cari ${widget.title.toLowerCase()}...',
-          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF9AA19C)),
-          prefixIcon: const Icon(
+          hintStyle: TextStyle(
+            fontSize: 13,
+            color: colors.onSurfaceVariant.withValues(alpha: 0.65),
+          ),
+          prefixIcon: Icon(
             Icons.search_rounded,
-            color: _primaryGreen,
+            color: colors.primary,
             size: 21,
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   onPressed: _searchController.clear,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close_rounded,
                     size: 18,
-                    color: _textSecondary,
+                    color: colors.onSurfaceVariant,
                   ),
                 )
               : null,
@@ -732,28 +747,30 @@ class _MasterPageState<T> extends State<_MasterPage<T>> {
   // ==========================================================
 
   Widget _buildSectionHeader(int count) {
+    final colors = Theme.of(context).colorScheme;
+
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             'Daftar Data',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w900,
-              color: _textPrimary,
+              color: colors.onSurface,
             ),
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: _lightGreen,
+            color: colors.secondaryContainer,
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
             '$count data',
-            style: const TextStyle(
-              color: _primaryGreen,
+            style: TextStyle(
+              color: colors.primary,
               fontSize: 10,
               fontWeight: FontWeight.w800,
             ),
@@ -836,10 +853,11 @@ class _MasterTile<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final active = status.toLowerCase() == 'aktif';
 
     return Material(
-      color: Colors.white,
+      color: colors.surfaceContainerLow,
       borderRadius: BorderRadius.circular(19),
       child: InkWell(
         onTap: onEdit,
@@ -848,7 +866,7 @@ class _MasterTile<T> extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(19),
-            border: Border.all(color: const Color(0xFFE5EAE6)),
+            border: Border.all(color: colors.outlineVariant),
           ),
           child: Row(
             children: [
@@ -857,10 +875,10 @@ class _MasterTile<T> extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _lightGreen,
+                  color: colors.secondaryContainer,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(icon, color: _primaryGreen, size: 23),
+                child: Icon(icon, color: colors.primary, size: 23),
               ),
 
               const SizedBox(width: 13),
@@ -874,10 +892,10 @@ class _MasterTile<T> extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: _textPrimary,
+                        color: colors.onSurface,
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -885,10 +903,10 @@ class _MasterTile<T> extends StatelessWidget {
                       subtitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         height: 1.35,
-                        color: _textSecondary,
+                        color: colors.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -903,9 +921,9 @@ class _MasterTile<T> extends StatelessWidget {
               PopupMenuButton<String>(
                 tooltip: 'Menu',
                 padding: EdgeInsets.zero,
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_vert_rounded,
-                  color: Color(0xFF8A938C),
+                  color: colors.onSurfaceVariant,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -920,28 +938,28 @@ class _MasterTile<T> extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
                         Icon(
                           Icons.edit_outlined,
                           size: 19,
-                          color: _primaryGreen,
+                          color: colors.primary,
                         ),
                         SizedBox(width: 10),
                         Text('Edit'),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
                         Icon(
                           Icons.delete_outline_rounded,
                           size: 19,
-                          color: Colors.red,
+                          color: colors.error,
                         ),
                         SizedBox(width: 10),
                         Text('Hapus'),
@@ -970,12 +988,18 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = colors.brightness == Brightness.dark;
     final background = active
-        ? const Color(0xFFE7F5EB)
+        ? colors.secondaryContainer
+        : isDark
+        ? const Color(0xFF3D321A)
         : const Color(0xFFFFF1DF);
 
     final foreground = active
-        ? const Color(0xFF238047)
+        ? colors.primary
+        : isDark
+        ? const Color(0xFFF1CC75)
         : const Color(0xFFB27008);
 
     return Container(
@@ -1027,6 +1051,8 @@ class _EmptyMaster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30),
@@ -1036,37 +1062,38 @@ class _EmptyMaster extends StatelessWidget {
             Container(
               width: 90,
               height: 90,
-              decoration: const BoxDecoration(
-                color: _lightGreen,
+              decoration: BoxDecoration(
+                color: colors.secondaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 40, color: _primaryGreen),
+              child: Icon(icon, size: 40, color: colors.primary),
             ),
             const SizedBox(height: 20),
             Text(
               'Belum ada $title',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
-                color: _textPrimary,
+                color: colors.onSurface,
               ),
             ),
             const SizedBox(height: 7),
             Text(
               'Belum ada data yang tersedia.\nTambahkan data pertama untuk memulai.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 height: 1.5,
-                color: _textSecondary,
+                color: colors.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 22),
             FilledButton.icon(
               onPressed: onAdd,
               style: FilledButton.styleFrom(
-                backgroundColor: _primaryGreen,
+                backgroundColor: colors.primary,
+                foregroundColor: colors.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 13,
@@ -1097,6 +1124,8 @@ class _NoSearchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(top: 45),
       child: Column(
@@ -1105,24 +1134,28 @@ class _NoSearchResult extends StatelessWidget {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: const Color(0xFFEDF0ED),
+              color: colors.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(22),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.search_off_rounded,
               size: 32,
-              color: Color(0xFF8A938C),
+              color: colors.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
+          Text(
             'Data tidak ditemukan',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: colors.onSurface,
+            ),
           ),
           const SizedBox(height: 5),
-          const Text(
+          Text(
             'Coba gunakan kata pencarian yang berbeda.',
-            style: TextStyle(fontSize: 11, color: _textSecondary),
+            style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
           ),
         ],
       ),
@@ -1139,7 +1172,11 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: CircularProgressIndicator(color: _primaryGreen));
+    return Center(
+      child: CircularProgressIndicator(
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    );
   }
 }
 
@@ -1154,6 +1191,8 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30),
@@ -1164,28 +1203,32 @@ class _ErrorView extends StatelessWidget {
               width: 78,
               height: 78,
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: colors.errorContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.cloud_off_rounded,
                 size: 35,
-                color: Colors.red.shade400,
+                color: colors.error,
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Gagal memuat data',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+                color: colors.onSurface,
+              ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Terjadi masalah saat mengambil data.\nSilakan coba lagi.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
                 height: 1.5,
-                color: _textSecondary,
+                color: colors.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 20),
@@ -1194,8 +1237,8 @@ class _ErrorView extends StatelessWidget {
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Coba Lagi'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: _primaryGreen,
-                side: const BorderSide(color: _primaryGreen),
+                foregroundColor: colors.primary,
+                side: BorderSide(color: colors.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(13),
                 ),
@@ -1215,70 +1258,75 @@ class _ErrorView extends StatelessWidget {
 Future<bool> _confirmDelete(BuildContext context, String label) async {
   return await showDialog<bool>(
         context: context,
-        builder: (_) => AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          title: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(13),
+        builder: (dialogContext) {
+          final colors = Theme.of(dialogContext).colorScheme;
+
+          return AlertDialog(
+            backgroundColor: colors.surfaceContainerHigh,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: colors.errorContainer,
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: colors.error,
+                    size: 22,
+                  ),
                 ),
-                child: Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.red.shade500,
-                  size: 22,
+                const SizedBox(width: 12),
+                const Text(
+                  'Hapus Data',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                ),
+              ],
+            ),
+            content: Text(
+              'Apakah kamu yakin ingin menghapus $label ini?\n\n'
+              'Data yang sudah dihapus tidak dapat dikembalikan.',
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+            actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Batal',
+                  style: TextStyle(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              const Text(
-                'Hapus Data',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              const SizedBox(width: 5),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: colors.error,
+                  foregroundColor: colors.onError,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Hapus',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
               ),
             ],
-          ),
-          content: Text(
-            'Apakah kamu yakin ingin menghapus $label ini?\n\n'
-            'Data yang sudah dihapus tidak dapat dikembalikan.',
-            style: const TextStyle(
-              fontSize: 13,
-              height: 1.5,
-              color: _textSecondary,
-            ),
-          ),
-          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text(
-                'Batal',
-                style: TextStyle(
-                  color: _textSecondary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(width: 5),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.shade500,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Hapus',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ) ??
       false;
 }

@@ -67,7 +67,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   Widget _buildCurrentPage() {
     return switch (_selectedIndex) {
-      0 => const DashboardPage(),
+      0 => DashboardPage(onNavigate: _onNavigationTap),
       1 => const KebunPage(),
       2 => const PanenPage(),
       3 => const PerawatanPage(),

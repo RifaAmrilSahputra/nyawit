@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nyawit/models/kebun.dart';
 import 'package:nyawit/repositories/kebun_repository.dart';
-import 'package:nyawit/screens/kebun/kebun_detail_page.dart';
 import 'package:nyawit/screens/kebun/kebun_form_page.dart';
+import 'package:nyawit/screens/kebun/widgets/kebun_item_card.dart';
 import 'package:nyawit/screens/kebun/widgets/kebun_search.dart';
-import 'package:nyawit/screens/panen/panen_page.dart';
-import 'package:nyawit/screens/perawatan/perawatan_page.dart';
+import 'package:nyawit/screens/kebun/widgets/kebun_summary_card.dart';
 
 class KebunPage extends StatefulWidget {
   const KebunPage({super.key});
@@ -132,7 +131,7 @@ class _KebunPageState extends State<KebunPage> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
 
               children: [
-                _buildHeader(allKebuns, colors),
+                KebunSummaryCard(kebuns: allKebuns, onAdd: _openFormAndRefresh),
 
                 const SizedBox(height: 20),
 
@@ -150,7 +149,7 @@ class _KebunPageState extends State<KebunPage> {
                     (kebun) => Padding(
                       padding: const EdgeInsets.only(bottom: 14),
 
-                      child: GardenCard(
+                      child: KebunItemCard(
                         kebun: kebun,
 
                         onChanged: () {
@@ -168,935 +167,9 @@ class _KebunPageState extends State<KebunPage> {
       ),
     );
   }
-
-  Widget _buildHeader(List<Kebun> kebuns, ColorScheme colors) {
-    double totalLuas = 0;
-    int totalPohon = 0;
-
-    for (final kebun in kebuns) {
-      totalLuas += kebun.luas ?? 0;
-      totalPohon += kebun.jumlahPohon ?? 0;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-
-      decoration: BoxDecoration(
-        color: colors.primary,
-
-        borderRadius: BorderRadius.circular(26),
-
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF176B3A).withValues(alpha: 0.16),
-
-            blurRadius: 22,
-
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-
-      child: Stack(
-        children: [
-          Positioned(
-            right: -45,
-            top: -55,
-
-            child: Container(
-              width: 150,
-              height: 150,
-
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-
-                color: Colors.white.withValues(alpha: 0.055),
-              ),
-            ),
-          ),
-
-          Positioned(
-            right: -20,
-            bottom: -70,
-
-            child: Container(
-              width: 130,
-              height: 130,
-
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-
-                color: Colors.white.withValues(alpha: 0.035),
-              ),
-            ),
-          ),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final isCompact = constraints.maxWidth < 330;
-
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.13),
-
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-
-                        child: const Icon(
-                          Icons.forest_rounded,
-                          color: Colors.white,
-                          size: 25,
-                        ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            const Text(
-                              'Perkebunan',
-
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 19,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-
-                            const SizedBox(height: 3),
-
-                            const Text(
-                              'Kelola dan pantau kebun Anda',
-
-                              maxLines: 1,
-
-                              overflow: TextOverflow.ellipsis,
-
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      _AddGardenButton(
-                        onPressed: _openFormAndRefresh,
-                        compact: isCompact,
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-              const SizedBox(height: 22),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 14,
-                  horizontal: 8,
-                ),
-
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.075),
-
-                  borderRadius: BorderRadius.circular(17),
-
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                  ),
-                ),
-
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _SummaryItem(
-                        icon: Icons.landscape_rounded,
-                        value: '${kebuns.length}',
-                        label: 'Kebun',
-                      ),
-                    ),
-
-                    _SummaryDivider(),
-
-                    Expanded(
-                      child: _SummaryItem(
-                        icon: Icons.straighten_rounded,
-                        value: _formatNumber(totalLuas),
-                        label: 'Total Ha',
-                      ),
-                    ),
-
-                    _SummaryDivider(),
-
-                    Expanded(
-                      child: _SummaryItem(
-                        icon: Icons.forest_rounded,
-                        value: _formatNumber(totalPohon),
-                        label: 'Pohon',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatNumber(num value) {
-    final number = value.toDouble();
-
-    if (number == number.roundToDouble()) {
-      return number.toInt().toString();
-    }
-
-    return number.toStringAsFixed(1);
-  }
 }
 
 // =============================================================
-// ADD GARDEN BUTTON
-// =============================================================
-
-class _AddGardenButton extends StatelessWidget {
-  const _AddGardenButton({required this.onPressed, this.compact = false});
-
-  final VoidCallback onPressed;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    if (compact) {
-      return IconButton(
-        onPressed: onPressed,
-
-        tooltip: 'Tambah Kebun',
-
-        style: IconButton.styleFrom(
-          backgroundColor: colors.onPrimary,
-
-          foregroundColor: colors.primary,
-
-          minimumSize: const Size(42, 42),
-
-          fixedSize: const Size(42, 42),
-
-          padding: EdgeInsets.zero,
-
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
-          ),
-        ),
-
-        icon: const Icon(Icons.add_rounded, size: 22),
-      );
-    }
-
-    return FilledButton.icon(
-      onPressed: onPressed,
-
-      style: FilledButton.styleFrom(
-        backgroundColor: colors.onPrimary,
-
-        foregroundColor: colors.primary,
-
-        elevation: 0,
-
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-
-        minimumSize: const Size(0, 42),
-
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
-      ),
-
-      icon: const Icon(Icons.add_rounded, size: 18),
-
-      label: const Text(
-        'Tambah',
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-      ),
-    );
-  }
-}
-
-// =============================================================
-// GARDEN CARD
-// =============================================================
-
-class GardenCard extends StatelessWidget {
-  const GardenCard({super.key, required this.kebun, required this.onChanged});
-
-  final Kebun kebun;
-  final VoidCallback onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    final hasDescription = kebun.keterangan?.isNotEmpty ?? false;
-
-    final status = hasDescription ? 'Aktif' : 'Siap';
-
-    return Material(
-      color: Colors.transparent,
-
-      child: InkWell(
-        onTap: () async {
-          final changed = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(builder: (_) => KebunDetailPage(kebun: kebun)),
-          );
-
-          if (changed == true) {
-            onChanged();
-          }
-        },
-
-        borderRadius: BorderRadius.circular(22),
-
-        child: Ink(
-          padding: const EdgeInsets.all(17),
-
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
-
-            borderRadius: BorderRadius.circular(22),
-
-            border: Border.all(
-              color: colors.outlineVariant.withValues(alpha: 0.3),
-            ),
-
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.035),
-
-                blurRadius: 16,
-
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-
-                    decoration: BoxDecoration(
-                      color: colors.secondaryContainer,
-
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-
-                    child: Icon(
-                      Icons.forest_rounded,
-                      color: colors.primary,
-                      size: 26,
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-
-                      children: [
-                        Text(
-                          kebun.nama,
-
-                          maxLines: 1,
-
-                          overflow: TextOverflow.ellipsis,
-
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-
-                        const SizedBox(height: 5),
-
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on_rounded,
-                              size: 14,
-                              color: colors.onSurfaceVariant,
-                            ),
-
-                            const SizedBox(width: 4),
-
-                            Expanded(
-                              child: Text(
-                                kebun.lokasi ?? 'Lokasi belum diisi',
-
-                                maxLines: 1,
-
-                                overflow: TextOverflow.ellipsis,
-
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  _StatusBadge(status: status),
-                ],
-              ),
-
-              const SizedBox(height: 17),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 13,
-                  horizontal: 7,
-                ),
-
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerHighest,
-
-                  borderRadius: BorderRadius.circular(15),
-                ),
-
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _GardenStat(
-                        icon: Icons.landscape_rounded,
-                        label: 'Luas',
-                        value: kebun.luas == null ? '-' : '${kebun.luas} Ha',
-                      ),
-                    ),
-
-                    const _VerticalDivider(),
-
-                    Expanded(
-                      child: _GardenStat(
-                        icon: Icons.forest_rounded,
-                        label: 'Pohon',
-                        value: kebun.jumlahPohon == null
-                            ? '-'
-                            : _formatNumber(kebun.jumlahPohon!),
-                      ),
-                    ),
-
-                    const _VerticalDivider(),
-
-                    Expanded(
-                      child: _GardenStat(
-                        icon: Icons.info_outline_rounded,
-                        label: 'Data',
-                        value: hasDescription ? 'Lengkap' : 'Dasar',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // =====================================================
-              // RESPONSIVE ACTIONS
-              // =====================================================
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final width = constraints.maxWidth;
-
-                  // -------------------------------------------------
-                  // VERY SMALL SCREEN
-                  // -------------------------------------------------
-
-                  if (width < 350) {
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _HarvestButton(kebun: kebun)),
-
-                            const SizedBox(width: 8),
-
-                            Expanded(child: _MaintenanceButton(kebun: kebun)),
-                          ],
-                        ),
-
-                        const SizedBox(height: 7),
-
-                        _DetailButton(
-                          kebun: kebun,
-
-                          colors: colors,
-
-                          onChanged: onChanged,
-
-                          fullWidth: true,
-                        ),
-                      ],
-                    );
-                  }
-
-                  // -------------------------------------------------
-                  // NORMAL SCREEN
-                  // -------------------------------------------------
-
-                  return Row(
-                    children: [
-                      Expanded(flex: 3, child: _HarvestButton(kebun: kebun)),
-
-                      const SizedBox(width: 7),
-
-                      Expanded(
-                        flex: 4,
-
-                        child: _MaintenanceButton(kebun: kebun),
-                      ),
-
-                      const SizedBox(width: 7),
-
-                      Expanded(
-                        flex: 3,
-
-                        child: _DetailButton(
-                          kebun: kebun,
-
-                          colors: colors,
-
-                          onChanged: onChanged,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatNumber(num value) {
-    final number = value.toDouble();
-
-    if (number == number.roundToDouble()) {
-      return number.toInt().toString();
-    }
-
-    return number.toStringAsFixed(1);
-  }
-}
-
-// =============================================================
-// HARVEST BUTTON
-// =============================================================
-
-class _HarvestButton extends StatelessWidget {
-  const _HarvestButton({required this.kebun});
-
-  final Kebun kebun;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () {
-        Navigator.of(context).push<void>(
-          MaterialPageRoute(
-            builder: (_) => PanenPage(kebunId: kebun.id, kebunName: kebun.nama),
-          ),
-        );
-      },
-
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Theme.of(context).colorScheme.primary,
-
-        side: BorderSide(color: Theme.of(context).colorScheme.primary),
-
-        minimumSize: const Size(0, 42),
-
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
-
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-
-      icon: const Icon(Icons.grass_rounded, size: 17),
-
-      label: const Flexible(
-        child: Text(
-          'Panen',
-
-          maxLines: 1,
-
-          overflow: TextOverflow.ellipsis,
-
-          textAlign: TextAlign.center,
-
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-  }
-}
-
-// =============================================================
-// MAINTENANCE BUTTON
-// =============================================================
-
-class _MaintenanceButton extends StatelessWidget {
-  const _MaintenanceButton({required this.kebun});
-
-  final Kebun kebun;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () {
-        Navigator.of(context).push<void>(
-          MaterialPageRoute(
-            builder: (_) =>
-                PerawatanPage(kebunId: kebun.id, kebunName: kebun.nama),
-          ),
-        );
-      },
-
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Theme.of(context).colorScheme.primary,
-
-        side: BorderSide(color: Theme.of(context).colorScheme.primary),
-
-        minimumSize: const Size(0, 42),
-
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
-
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-
-      icon: const Icon(Icons.bloodtype_rounded, size: 17),
-
-      label: const Flexible(
-        child: Text(
-          'Perawatan',
-
-          maxLines: 1,
-
-          overflow: TextOverflow.ellipsis,
-
-          textAlign: TextAlign.center,
-
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-  }
-}
-
-// =============================================================
-// DETAIL BUTTON
-// =============================================================
-
-class _DetailButton extends StatelessWidget {
-  const _DetailButton({
-    required this.kebun,
-    required this.colors,
-    required this.onChanged,
-    this.fullWidth = false,
-  });
-
-  final Kebun kebun;
-  final ColorScheme colors;
-  final VoidCallback onChanged;
-  final bool fullWidth;
-
-  @override
-  Widget build(BuildContext context) {
-    final button = TextButton.icon(
-      onPressed: () async {
-        final changed = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(builder: (_) => KebunDetailPage(kebun: kebun)),
-        );
-
-        if (changed == true) {
-          onChanged();
-        }
-      },
-
-      style: TextButton.styleFrom(
-        foregroundColor: colors.primary,
-
-        minimumSize: const Size(0, 42),
-
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-
-      icon: const Icon(Icons.arrow_forward_rounded, size: 17),
-
-      label: Flexible(
-        child: Text(
-          fullWidth ? 'Lihat detail kebun' : 'Detail',
-
-          maxLines: 1,
-
-          overflow: TextOverflow.ellipsis,
-
-          textAlign: TextAlign.center,
-
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-
-    if (fullWidth) {
-      return SizedBox(width: double.infinity, child: button);
-    }
-
-    return button;
-  }
-}
-
-// =============================================================
-// SUMMARY ITEM
-// =============================================================
-
-class _SummaryItem extends StatelessWidget {
-  const _SummaryItem({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white70, size: 18),
-
-        const SizedBox(height: 5),
-
-        Text(
-          value,
-
-          maxLines: 1,
-
-          overflow: TextOverflow.ellipsis,
-
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-
-        const SizedBox(height: 2),
-
-        Text(
-          label,
-
-          maxLines: 1,
-
-          overflow: TextOverflow.ellipsis,
-
-          style: const TextStyle(color: Colors.white70, fontSize: 10),
-        ),
-      ],
-    );
-  }
-}
-
-// =============================================================
-// SUMMARY DIVIDER
-// =============================================================
-
-class _SummaryDivider extends StatelessWidget {
-  const _SummaryDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 38,
-      width: 1,
-
-      color: Colors.white.withValues(alpha: 0.15),
-    );
-  }
-}
-
-// =============================================================
-// GARDEN STAT
-// =============================================================
-
-class _GardenStat extends StatelessWidget {
-  const _GardenStat({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, size: 17, color: Theme.of(context).colorScheme.primary),
-
-        const SizedBox(height: 5),
-
-        Text(
-          value,
-
-          maxLines: 1,
-
-          overflow: TextOverflow.ellipsis,
-
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-        ),
-
-        const SizedBox(height: 2),
-
-        Text(
-          label,
-
-          maxLines: 1,
-
-          overflow: TextOverflow.ellipsis,
-
-          style: TextStyle(
-            fontSize: 10,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// =============================================================
-// VERTICAL DIVIDER
-// =============================================================
-
-class _VerticalDivider extends StatelessWidget {
-  const _VerticalDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 38,
-      color: Theme.of(context).colorScheme.outlineVariant,
-    );
-  }
-}
-
-// =============================================================
-// STATUS BADGE
-// =============================================================
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.status});
-
-  final String status;
-
-  @override
-  Widget build(BuildContext context) {
-    final isActive = status == 'Aktif';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFE5F5EA) : const Color(0xFFFFF3DD),
-
-        borderRadius: BorderRadius.circular(999),
-      ),
-
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-
-              color: isActive
-                  ? const Color(0xFF26964D)
-                  : const Color(0xFFD58A00),
-            ),
-          ),
-
-          const SizedBox(width: 5),
-
-          Text(
-            status,
-
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-
-              color: isActive
-                  ? const Color(0xFF227E43)
-                  : const Color(0xFFAA6D00),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// =============================================================
-// EMPTY VIEW
 // =============================================================
 
 class _EmptyView extends StatelessWidget {
@@ -1106,6 +179,8 @@ class _EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30),
@@ -1119,23 +194,27 @@ class _EmptyView extends StatelessWidget {
               height: 100,
 
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondaryContainer,
+                color: colors.secondaryContainer,
                 shape: BoxShape.circle,
               ),
 
               child: Icon(
                 Icons.forest_rounded,
                 size: 45,
-                color: Theme.of(context).colorScheme.primary,
+                color: colors.primary,
               ),
             ),
 
             const SizedBox(height: 22),
 
-            const Text(
+            Text(
               'Belum ada kebun',
 
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: colors.onSurface,
+              ),
             ),
 
             const SizedBox(height: 7),
@@ -1149,7 +228,7 @@ class _EmptyView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: colors.onSurfaceVariant,
               ),
             ),
 
@@ -1159,7 +238,8 @@ class _EmptyView extends StatelessWidget {
               onPressed: onAdd,
 
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: colors.primary,
+                foregroundColor: colors.onPrimary,
 
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -1195,6 +275,8 @@ class _NoSearchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(top: 50),
 
@@ -1203,15 +285,19 @@ class _NoSearchResult extends StatelessWidget {
           Icon(
             Icons.search_off_rounded,
             size: 50,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: colors.onSurfaceVariant,
           ),
 
           const SizedBox(height: 12),
 
-          const Text(
+          Text(
             'Kebun tidak ditemukan',
 
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: colors.onSurface,
+            ),
           ),
 
           const SizedBox(height: 5),
@@ -1219,10 +305,7 @@ class _NoSearchResult extends StatelessWidget {
           Text(
             'Coba gunakan nama atau lokasi lain.',
 
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
           ),
         ],
       ),
@@ -1258,6 +341,8 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30),
@@ -1271,23 +356,27 @@ class _ErrorView extends StatelessWidget {
               height: 80,
 
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.errorContainer,
+                color: colors.errorContainer,
                 shape: BoxShape.circle,
               ),
 
               child: Icon(
                 Icons.cloud_off_rounded,
                 size: 36,
-                color: Theme.of(context).colorScheme.error,
+                color: colors.error,
               ),
             ),
 
             const SizedBox(height: 18),
 
-            const Text(
+            Text(
               'Gagal memuat data',
 
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: colors.onSurface,
+              ),
             ),
 
             const SizedBox(height: 6),
@@ -1297,10 +386,7 @@ class _ErrorView extends StatelessWidget {
 
               textAlign: TextAlign.center,
 
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
             ),
 
             const SizedBox(height: 20),
@@ -1323,6 +409,13 @@ class _ErrorView extends StatelessWidget {
 // DETAIL PAGE
 // =============================================================
 
+List<Color> _legacyHeaderGradient(ColorScheme colors, bool isDark) {
+  if (isDark) {
+    return const [Color(0xFF123B2D), Color(0xFF205640)];
+  }
+  return [colors.primary, Color.lerp(colors.primary, colors.tertiary, .42)!];
+}
+
 class KebunDetailPageLegacy extends StatelessWidget {
   const KebunDetailPageLegacy({super.key, required this.kebun});
 
@@ -1342,8 +435,6 @@ class KebunDetailPageLegacy extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    final status = (kebun.keterangan?.isNotEmpty ?? false) ? 'Aktif' : 'Siap';
-
     return Scaffold(
       backgroundColor: colors.surface,
 
@@ -1354,10 +445,14 @@ class KebunDetailPageLegacy extends StatelessWidget {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
 
-        title: const Text(
+        title: Text(
           'Detail Kebun',
 
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+            color: colors.onSurface,
+          ),
         ),
 
         actions: [
@@ -1369,6 +464,7 @@ class KebunDetailPageLegacy extends StatelessWidget {
 
               style: IconButton.styleFrom(
                 backgroundColor: colors.surfaceContainerHighest,
+                foregroundColor: colors.primary,
               ),
 
               icon: const Icon(Icons.edit_rounded, size: 20),
@@ -1383,7 +479,10 @@ class KebunDetailPageLegacy extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
 
         children: [
-          _buildDetailHeader(colors, status),
+          _buildDetailHeader(
+            colors,
+            Theme.of(context).brightness == Brightness.dark,
+          ),
 
           const SizedBox(height: 22),
 
@@ -1483,14 +582,28 @@ class KebunDetailPageLegacy extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailHeader(ColorScheme colors, String status) {
+  Widget _buildDetailHeader(ColorScheme colors, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(22),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF176B3A),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: _legacyHeaderGradient(colors, isDark),
+        ),
 
         borderRadius: BorderRadius.circular(25),
+
+        boxShadow: [
+          BoxShadow(
+            color: colors.primary.withValues(alpha: .14),
+
+            blurRadius: 18,
+
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
 
       child: Row(
@@ -1561,10 +674,6 @@ class KebunDetailPageLegacy extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 9),
-
-                _StatusBadge(status: status),
               ],
             ),
           ),
@@ -1599,15 +708,17 @@ class _DetailSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(17),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surfaceContainerLow,
 
         borderRadius: BorderRadius.circular(21),
 
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: .45)),
       ),
 
       child: Column(
@@ -1621,12 +732,12 @@ class _DetailSection extends StatelessWidget {
                 height: 36,
 
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE4F3E9),
+                  color: colors.secondaryContainer,
 
                   borderRadius: BorderRadius.circular(11),
                 ),
 
-                child: Icon(icon, size: 19, color: const Color(0xFF176B3A)),
+                child: Icon(icon, size: 19, color: colors.primary),
               ),
 
               const SizedBox(width: 10),
@@ -1639,9 +750,10 @@ class _DetailSection extends StatelessWidget {
 
                   overflow: TextOverflow.ellipsis,
 
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
+                    color: colors.onSurface,
                   ),
                 ),
               ),
@@ -1676,6 +788,8 @@ class _InfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 13),
 
@@ -1683,7 +797,7 @@ class _InfoTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-          Icon(icon, size: 18, color: const Color(0xFF176B3A)),
+          Icon(icon, size: 18, color: colors.primary),
 
           const SizedBox(width: 11),
 
@@ -1693,7 +807,7 @@ class _InfoTile extends StatelessWidget {
             child: Text(
               label,
 
-              style: const TextStyle(fontSize: 12, color: Color(0xFF7B827D)),
+              style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant),
             ),
           ),
 
@@ -1703,7 +817,11 @@ class _InfoTile extends StatelessWidget {
             child: Text(
               value,
 
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: colors.onSurface,
+              ),
             ),
           ),
         ],
